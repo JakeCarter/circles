@@ -1,7 +1,7 @@
 -- circles
 
 beatclock = require 'beatclock'
-local libc = dofile('/home/we/dust/code/carter/circles/lib/libCircles.lua')
+local libc = include('libCircles.lua')
 libc.debug = false
 
 steps = {}

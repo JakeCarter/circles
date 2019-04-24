@@ -30,11 +30,17 @@ end
 
 -- removes a the circle at the given index
 function libCircles.removeCircle(index)
+  index = #libCircles._circles
+  
 	table.remove(libCircles._circles, index)
 	
 	if libCircles.debug then
 	  print("removed circle at index: " .. index)
 	end
+end
+
+function libCircles.removeAllCircles()
+  libCircles._circles = {}
 end
 
 function libCircles.redrawCircles(handler)

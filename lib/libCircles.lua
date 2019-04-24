@@ -5,8 +5,15 @@ local libCircles = {}
 libCircles._circles = {}
 libCircles.debug = false
 
+libCircles.p = {}
+libCircles.p.x = 128/2
+libCircles.p.y = 64/2
+  
 -- adds a new circle at x, y and returns its index
 function libCircles.addCircle(x, y)
+  x = libCircles.p.x
+  y = libCircles.p.y
+  
 	local c = {}
 	c.x = x
 	c.y = y
@@ -44,6 +51,28 @@ function libCircles.update()
   libCircles._growCircles()
 	-- todo: detect colisions and call handler
 	libCircles._detectColisions()
+end
+
+function libCircles.redrawCursor(handler)
+  if handler ~= nil then
+    handler(libCircles.p.x, libCircles.p.y)
+  end
+end
+
+function libCircles.updateCursor(dx,dy)
+  libCircles.p.x = libCircles.p.x + dx
+  if libCircles.p.x < 0 then
+    libCircles.p.x = 0
+  elseif libCircles.p.x > 128 then
+    libCircles.p.x = 128
+  end
+
+  libCircles.p.y = libCircles.p.y + dy
+  if libCircles.p.y < 0 then
+    libCircles.p.y = 0
+  elseif libCircles.p.y > 64 then
+    libCircles.p.y = 64
+  end
 end
 
 --[[ 

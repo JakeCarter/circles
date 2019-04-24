@@ -1,7 +1,7 @@
 -- circles
 
 beatclock = require 'beatclock'
-local libc = include('libCircles.lua')
+local libc = include('lib/libCircles')
 libc.debug = false
 
 steps = {}
@@ -12,9 +12,7 @@ clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
 function init()
-  p = {}
-  p.x = 128/2
-  p.y = 64/2
+  screen.aa(1)
   
   clk.on_step = count
   clk:add_clock_params()
@@ -33,47 +31,33 @@ function redraw()
   screen.clear()
   
   -- draw cursor
-  screen.aa(0)
-  screen.level(1)
-  screen.line_width(1)
-  screen.pixel(p.x, p.y)
+  libc.redrawCursor(function(x, y)
+    screen.pixel(x, y)
+    screen.fill()
+  end)
   
   -- draw circles
-  libc.redrawCircles(_circle_redraw_handler)
+  libc.redrawCircles(function(c)
+    screen.line_width(1)
+    screen.circle(c.x,c.y,c.r)
+    screen.close()
+    screen.stroke()
+  end)
   
   screen.update()
 end
 
-function _circle_redraw_handler(c)
-    screen.level(15)
-    screen.line_width(1)
-    screen.stroke()
-    screen.circle(c.x,c.y,c.r)
-end
-
 function key(n,z)
   if n == 3 and z == 1 then
-    libc.addCircle(p.x, p.y)
+    libc.addCircle()
   end
 end
 
 function enc(n,d)
-  if n == 1 then
-    --libc.update()
-  elseif n == 2 then
-    p.x = p.x + d
-    if p.x > 128 then
-      p.x = 128
-    elseif p.x < 0 then
-      p.x = 0
-    end
+  if n == 2 then
+    libc.updateCursor(d,0)
   elseif n == 3 then
-    p.y = p.y + d
-    if p.y > 63 then
-      p.y = 64
-    elseif p.y < 0 then
-      p.y = 0
-    end
+    libc.updateCursor(0,d)
   end
   redraw()
 end

@@ -107,4 +107,17 @@ function libCircles._detectColisions()
 	end
 end
 
+function areCirclesTouching(c1, c2)
+	local distSq = (c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)
+	local radSumSq = (c1.r + c2.r) * (c1.r + c2.r)
+	
+	if distSq == radSumSq then
+	  return true
+	elseif distSq > radSumSq then
+		return false
+	else
+		return true
+	end
+end
+
 return libCircles

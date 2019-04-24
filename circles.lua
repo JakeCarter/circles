@@ -3,7 +3,10 @@
 local beatclock = require 'beatclock'
 local UI = require "ui"
 local libc = include('lib/libCircles')
-libc.debug = false
+-- libc.debug = true
+libc.handleCircleBurst = function(x, y, r)
+  -- print("handleCircleBurst x: " .. x .. " y: " .. y .. " r: " .. r)
+end
 
 local steps = {}
 local position = 1
@@ -80,8 +83,4 @@ function enc(n,d)
     libc.updateCursor(0,d)
   end
   redraw()
-end
-
-function confirmRemoveCircle()
-  
 end

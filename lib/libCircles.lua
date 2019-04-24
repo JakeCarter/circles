@@ -55,7 +55,6 @@ end
 -- updates the circles and calls the redraw function you set, if you set one
 function libCircles.update()
   libCircles._growCircles()
-	-- todo: detect colisions and call handler
 	libCircles._detectColisions()
 end
 
@@ -85,10 +84,16 @@ end
 Private Helpers
 --]]
 
+function libCircles._log(msg)
+	if libCircles.debug then
+	  print(msg)
+	end
+end
+
 function libCircles._growCircles()
 	-- grow each circle
 	if libCircles.debug then
-	  print("_growCircles()")
+	 -- print("_growCircles()")
 	end
 	
 	for i=1,#libCircles._circles do
@@ -100,14 +105,48 @@ end
 function libCircles._detectColisions()
   for i=1,#libCircles._circles do
 		local c = libCircles._circles[i]
-		if c.r > 64 then
-		  -- too big, start it over
-		  c.r = 1
+		if libCircles._isCircleTooBig(c) then
+		  libCircles._handleCircleBurst(c)
 		end
-	end
+		local hitCircle = libCircles._didCircleAtIndexCollideWithOtherCircles(i)
+		-- libCircles._log("hitCircle: " .. hitCircle)
+		if hitCircle ~= nil then
+		  libCircles._handleCircleBurst(hitCircle)
+		end
+  end
 end
 
-function areCirclesTouching(c1, c2)
+libCircles.handleCircleBurst = nil
+function libCircles._handleCircleBurst(c)
+  if libCircles.handleCircleBurst ~= nil then
+    libCircles.handleCircleBurst(c.x, c.y, c.r)
+  end
+  c.r = 1
+end
+
+function libCircles._isCircleTooBig(c)
+  return c.r > 64
+end
+
+function libCircles._didCircleAtIndexCollideWithOtherCircles(c1i)
+  -- compare c with other circles
+  local c1 = libCircles._circles[c1i]
+  
+  for c2i=1,#libCircles._circles do
+    -- libCircles._log("c2i: " .. c2i)
+    if c1i ~= c2i then
+      local c2 = libCircles._circles[c2i]
+      -- libCircles._log("c2: " .. c2)
+      if libCircles._areCirclesTouching(c1, c2) then
+        return c2
+      end
+    end
+  end
+  
+  return nil
+end
+
+function libCircles._areCirclesTouching(c1, c2)
 	local distSq = (c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)
 	local radSumSq = (c1.r + c2.r) * (c1.r + c2.r)
 	

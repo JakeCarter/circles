@@ -1,16 +1,18 @@
 -- libCircles
+-- todo: write a description
 
 local libCircles = {}
 
 libCircles._circles = {}
-libCircles.debug = false
 
+-- todo: rename p to _p
 libCircles.p = {}
 libCircles.p.x = 128/2
 libCircles.p.y = 64/2
   
 -- adds a new circle at x, y and returns its index
 function libCircles.addCircle(x, y)
+  -- todo: test optional arguments
   x = libCircles.p.x
   y = libCircles.p.y
   
@@ -20,29 +22,22 @@ function libCircles.addCircle(x, y)
 	c.r = 1
 	
 	table.insert(libCircles._circles, c)
-	
-	if libCircles.debug then
-	  print("circle added at point: " .. x .. ", " .. y .. " with index: " .. #libCircles._circles)
-	end
-	
+		
 	return #libCircles._circles
 end	
 
--- removes a the circle at the given index
+-- removes the circle at the given index, or the last circle if index is nil
 function libCircles.removeCircle(index)
   index = #libCircles._circles
   
 	table.remove(libCircles._circles, index)
-	
-	if libCircles.debug then
-	  print("removed circle at index: " .. index)
-	end
 end
 
 function libCircles.removeAllCircles()
   libCircles._circles = {}
 end
 
+-- todo: rename redrawCircles to forEachCircle
 function libCircles.redrawCircles(handler)
   if handler ~= nil then
     for i=1,#libCircles._circles do
@@ -64,8 +59,9 @@ function libCircles.redrawCursor(handler)
   end
 end
 
-function libCircles.updateCursor(dx,dy)
+function libCircles.updateCursor(dx, dy)
   libCircles.p.x = libCircles.p.x + dx
+  -- todo: update to using min/max to clamp and add unit tests
   if libCircles.p.x < 0 then
     libCircles.p.x = 0
   elseif libCircles.p.x > 128 then
@@ -73,6 +69,7 @@ function libCircles.updateCursor(dx,dy)
   end
 
   libCircles.p.y = libCircles.p.y + dy
+  -- todo: update to using min/max to clamp and add unit tests
   if libCircles.p.y < 0 then
     libCircles.p.y = 0
   elseif libCircles.p.y > 64 then
@@ -84,24 +81,16 @@ end
 Private Helpers
 --]]
 
-function libCircles._log(msg)
-	if libCircles.debug then
-	  print(msg)
-	end
-end
-
 function libCircles._growCircles()
-	-- grow each circle
-	if libCircles.debug then
-	 -- print("_growCircles()")
-	end
-	
 	for i=1,#libCircles._circles do
 		local c = libCircles._circles[i]
 		c.r = c.r + 1
 	end	
 end
 
+-- todo: refactor to return hit circles
+-- todo: add unit test of 3 circles colliding
+-- todo: fix typ-o in name "collisions"
 function libCircles._detectColisions()
   for i=1,#libCircles._circles do
 		local c = libCircles._circles[i]
@@ -117,10 +106,12 @@ function libCircles._detectColisions()
 end
 
 libCircles.handleCircleBurst = nil
+-- todo: rename to _notifyOfCircleBurst.
 function libCircles._handleCircleBurst(c)
   if libCircles.handleCircleBurst ~= nil then
     libCircles.handleCircleBurst(c.x, c.y, c.r)
   end
+  -- todo: don't reset until we've detected and notified about all bursts
   c.r = 1
 end
 
@@ -128,15 +119,14 @@ function libCircles._isCircleTooBig(c)
   return c.r > 64
 end
 
+-- todo: fix name or implementation; name implies a BOOL return type
 function libCircles._didCircleAtIndexCollideWithOtherCircles(c1i)
-  -- compare c with other circles
+  -- compare c1 with other circles
   local c1 = libCircles._circles[c1i]
   
   for c2i=1,#libCircles._circles do
-    -- libCircles._log("c2i: " .. c2i)
     if c1i ~= c2i then
       local c2 = libCircles._circles[c2i]
-      -- libCircles._log("c2: " .. c2)
       if libCircles._areCirclesTouching(c1, c2) then
         return c2
       end

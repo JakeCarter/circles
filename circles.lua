@@ -54,7 +54,7 @@ function redraw()
     screen.fill()
     
     -- draw circles
-    libc.redrawCircles(function(c)
+    libc.forEachCircle(function(c)
       screen.line_width(1)
       screen.circle(c.x,c.y,c.r)
       screen.close()

@@ -37,8 +37,7 @@ function libCircles.removeAllCircles()
   libCircles._circles = {}
 end
 
--- todo: rename redrawCircles to forEachCircle
-function libCircles.redrawCircles(handler)
+function libCircles.forEachCircle(handler)
   if handler ~= nil then
     for i=1,#libCircles._circles do
       local c = libCircles._circles[i]

@@ -5,7 +5,7 @@ local libCircles = {}
 
 libCircles._circles = {}
 
--- todo: rename p to _p
+-- cursor position
 libCircles.p = {}
 libCircles.p.x = 128/2
 libCircles.p.y = 64/2
@@ -51,12 +51,6 @@ end
 function libCircles.update()
   libCircles._growCircles()
 	libCircles._detectColisions()
-end
-
-function libCircles.redrawCursor(handler)
-  if handler ~= nil then
-    handler(libCircles.p.x, libCircles.p.y)
-  end
 end
 
 function libCircles.updateCursor(dx, dy)

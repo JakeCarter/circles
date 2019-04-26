@@ -50,10 +50,8 @@ function redraw()
     message:redraw()
   else
     -- draw cursor
-    libc.redrawCursor(function(x, y)
-      screen.pixel(x, y)
-      screen.fill()
-    end)
+    screen.pixel(libc.p.x, libc.p.y)
+    screen.fill()
     
     -- draw circles
     libc.redrawCircles(function(c)

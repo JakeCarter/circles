@@ -12,9 +12,8 @@ libCircles.p.y = 64/2
   
 -- adds a new circle at x, y and returns its index
 function libCircles.addCircle(x, y)
-  -- todo: test optional arguments
-  x = libCircles.p.x
-  y = libCircles.p.y
+  x = x or libCircles.p.x
+  y = y or libCircles.p.y
   
 	local c = {}
 	c.x = x
@@ -28,7 +27,7 @@ end
 
 -- removes the circle at the given index, or the last circle if index is nil
 function libCircles.removeCircle(index)
-  index = #libCircles._circles
+  index = index or #libCircles._circles
   
 	table.remove(libCircles._circles, index)
 end

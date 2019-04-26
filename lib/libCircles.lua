@@ -99,8 +99,11 @@ function libCircles._detectColisions()
 		end
 		local hitCircle = libCircles._didCircleAtIndexCollideWithOtherCircles(i)
 		if hitCircle ~= nil then
-		  libCircles._handleCircleBurst(hitCircle)
-		  libCircles._handleCircleBurst(c)
+		  if math.random(2) == 1 then
+		    libCircles._handleCircleBurst(hitCircle)
+		  else
+		    libCircles._handleCircleBurst(c)
+		  end
 		end
   end
 end

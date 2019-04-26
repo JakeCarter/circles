@@ -1,21 +1,31 @@
 -- circles
 
-local beatclock = require 'beatclock'
-local UI = require "ui"
-local libc = include('lib/libCircles')
--- libc.debug = true
+engine.name = 'PolyPerc'
+
+music = require 'musicutil'
+beatclock = require 'beatclock'
+UI = require "ui"
+libc = include('lib/libCircles')
 libc.handleCircleBurst = function(x, y, r)
-  -- print("handleCircleBurst x: " .. x .. " y: " .. y .. " r: " .. r)
+  local pixelsPerNote = 64 / #scale
+  local noteIndex = math.floor((y / pixelsPerNote) + 1)
+  local note = scale[noteIndex]
+  -- print(note)
+  engine.amp(r/100)
+  engine.hz(note)
 end
 
-local steps = {}
-local position = 1
+steps = {}
+position = 1
 
-local clk = beatclock.new()
-local clk_midi = midi.connect()
+mode = math.random(#music.SCALES)
+scale = music.generate_scale_of_length(60,music.SCALES[mode].name,8)
+
+clk = beatclock.new()
+clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
-local message
+message = nil
 
 function init()
   screen.aa(1)

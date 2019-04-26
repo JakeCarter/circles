@@ -115,6 +115,7 @@ function libCircles._handleCircleBurst(c)
   c.r = 1
 end
 
+-- todo: this should change to ensure the circle is always fully on screen
 function libCircles._isCircleTooBig(c)
   return c.r > 64
 end

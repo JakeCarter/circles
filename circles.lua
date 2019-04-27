@@ -50,7 +50,7 @@ function init()
 end
 
 function count()
-  libc.update()
+  libc.updateCircles()
   redraw()
 end
 
@@ -73,7 +73,7 @@ function redraw()
     end)
   end
   
-  screen.update()
+  screen.updateCircles()
 end
 
 function key(n,z)

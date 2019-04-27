@@ -11,7 +11,7 @@ assert(#libc._circles == 1)
 assert(libc._circles[1].r == 1)
 
 -- test update
-libc.update()
+libc.updateCircles()
 assert(libc._circles[1].r == 2)
 
 -- test remove all circles
@@ -27,7 +27,7 @@ assert(libc._circles[1].y == 20)
 -- test reset
 libc.handleCircleBurst = function(circle) end
 assert(libc.handleCircleBurst ~= nil)
-libc._reset()
+libc.reset()
 assert(libc.p.x == 64 and libc.p.y == 32)
 assert(#libc._circles == 0)
 assert(libc.handleCircleBurst == nil)
@@ -41,9 +41,9 @@ assert(#libc._circles == 2)
 assert(libc._circles[1].r == 1)
 assert(libc._circles[2].r == 1)
 
-libc.update()
-libc.update()
-libc.update()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
 assert(libc._circles[1].r == 4)
 assert(libc._circles[2].r == 4)
 
@@ -53,10 +53,10 @@ libc.handleCircleBurst = function(circle)
     assert(circle.r == 5)
     burstCount = burstCount + 1
 end
-libc.update()
+libc.updateCircles()
 assert((libc._circles[1].r == 1 and libc._circles[2].r == 5) or (libc._circles[1].r == 5 and libc._circles[2].r == 1))
 assert(burstCount == 1)
-libc._reset()
+libc.reset()
 
 -- test keeping cursor on screen: lower bound
 libc.p.x = 0
@@ -73,13 +73,13 @@ assert(libc.p.x == 128)
 assert(libc.p.y == 64)
 
 -- test 3 circles colliding
-libc._reset()
+libc.reset()
 libc.addCircle(10, 32)
 libc.addCircle(20, 32)
 libc.addCircle(30, 32)
-libc.update()
-libc.update()
-libc.update()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
 libc.forEachCircle(function(c)
     assert(c.r == 4)
 end)
@@ -89,8 +89,8 @@ local burstCount = 0
 libc.handleCircleBurst = function(circle)
   burstCount = burstCount + 1
 end
-libc.update()
+libc.updateCircles()
 assert(burstCount == 2)
-libc._reset()
+libc.reset()
 
 print("all tests passed!")

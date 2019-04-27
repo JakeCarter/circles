@@ -19,7 +19,7 @@ steps = {}
 position = 1
 
 mode = math.random(#music.SCALES)
-scale = music.generate_scale_of_length(60,music.SCALES[mode].name,8)
+scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
 
 clk = beatclock.new()
 clk_midi = midi.connect()
@@ -34,6 +34,17 @@ function init()
   clk:add_clock_params()
   
   params:add_separator()
+  
+  params:add_option("keep_on_screen", "keep on screen", { "no", "yes" })
+  params:set_action("keep_on_screen", function(x)
+    if x == 1 then
+      -- no
+      libc.shouldBurstOnScreenEdge = false
+    else
+      -- yes
+      libc.shouldBurstOnScreenEdge = true
+    end
+  end)
   
   clk:start()
 end

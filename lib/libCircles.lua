@@ -7,6 +7,7 @@ libCircles._circles = {}
 
 -- cursor position
 libCircles.p = {}
+libCircles.shouldBurstOnScreenEdge = false
 
 function libCircles._reset()
   libCircles._circles = {}
@@ -103,9 +104,17 @@ function libCircles._handleCircleBurst(c)
   c.r = 1
 end
 
--- todo: this should change to ensure the circle is always fully on screen
 function libCircles._isCircleTooBig(c)
-  return c.r > 64
+  if libCircles.shouldBurstOnScreenEdge then
+    local top = c.y - c.r
+    local right = c.x + c.r
+    local bottom = c.y + c.r
+    local left = c.x - c.r
+    
+    return top < 0 or right > 128 or bottom > 64 or left < 0
+  else 
+    return c.r > 64
+  end
 end
 
 -- todo: fix name or implementation; name implies a BOOL return type

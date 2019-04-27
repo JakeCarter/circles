@@ -82,21 +82,20 @@ function libCircles._detectCollisions()
   for i=1,#libCircles._circles do
 		local c = libCircles._circles[i]
 		if libCircles._isCircleTooBig(c) then
-		  libCircles._handleCircleBurst(c)
+		  libCircles._notifyOfCircleBurst(c)
 		end
 		local hitCircle = libCircles._didCircleAtIndexCollideWithOtherCircles(i)
 		if hitCircle ~= nil then
 		  if math.random(2) == 1 then
-		    libCircles._handleCircleBurst(hitCircle)
+		    libCircles._notifyOfCircleBurst(hitCircle)
 		  else
-		    libCircles._handleCircleBurst(c)
+		    libCircles._notifyOfCircleBurst(c)
 		  end
 		end
   end
 end
 
--- todo: rename to _notifyOfCircleBurst.
-function libCircles._handleCircleBurst(c)
+function libCircles._notifyOfCircleBurst(c)
   if libCircles.handleCircleBurst ~= nil then
     libCircles.handleCircleBurst(c.x, c.y, c.r)
   end

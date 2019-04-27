@@ -48,7 +48,7 @@ end
 -- updates the circles and calls the redraw function you set, if you set one
 function libCircles.update()
   libCircles._growCircles()
-	libCircles._detectColisions()
+	libCircles._detectCollisions()
 end
 
 function libCircles.updateCursor(dx, dy)
@@ -69,8 +69,7 @@ end
 
 -- todo: refactor to return hit circles
 -- todo: add unit test of 3 circles colliding
--- todo: fix typ-o in name "collisions"
-function libCircles._detectColisions()
+function libCircles._detectCollisions()
   for i=1,#libCircles._circles do
 		local c = libCircles._circles[i]
 		if libCircles._isCircleTooBig(c) then

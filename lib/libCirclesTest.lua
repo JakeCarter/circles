@@ -25,9 +25,12 @@ assert(libc._circles[1].x == 10)
 assert(libc._circles[1].y == 20)
 
 -- test reset
+libc.handleCircleBurst = function(x, y, r) end
+assert(libc.handleCircleBurst ~= nil)
 libc._reset()
 assert(libc.p.x == 64 and libc.p.y == 32)
 assert(#libc._circles == 0)
+assert(libc.handleCircleBurst == nil)
 
 -- test burst
 libc.p.x = 30

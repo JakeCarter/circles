@@ -14,6 +14,8 @@ function libCircles._reset()
   libCircles.p = {}
   libCircles.p.x = 128/2
   libCircles.p.y = 64/2
+  
+  libCircles.handleCircleBurst = nil
 end
 libCircles._reset()
   
@@ -93,7 +95,6 @@ function libCircles._detectCollisions()
   end
 end
 
-libCircles.handleCircleBurst = nil
 -- todo: rename to _notifyOfCircleBurst.
 function libCircles._handleCircleBurst(c)
   if libCircles.handleCircleBurst ~= nil then

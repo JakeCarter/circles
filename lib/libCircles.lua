@@ -97,7 +97,7 @@ end
 
 function libCircles._notifyOfCircleBurst(c)
   if libCircles.handleCircleBurst ~= nil then
-    libCircles.handleCircleBurst(c.x, c.y, c.r)
+    libCircles.handleCircleBurst(c)
   end
   -- todo: don't reset until we've detected and notified about all bursts
   c.r = 1

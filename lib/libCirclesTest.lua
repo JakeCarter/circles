@@ -25,7 +25,7 @@ assert(libc._circles[1].x == 10)
 assert(libc._circles[1].y == 20)
 
 -- test reset
-libc.handleCircleBurst = function(x, y, r) end
+libc.handleCircleBurst = function(circle) end
 assert(libc.handleCircleBurst ~= nil)
 libc._reset()
 assert(libc.p.x == 64 and libc.p.y == 32)
@@ -49,8 +49,8 @@ assert(libc._circles[2].r == 4)
 
 -- a random circle will burst. we don't know which one. assert that only 1 of them has burst.
 local burstCount = 0
-libc.handleCircleBurst = function(x, y, r)
-    assert(r == 5)
+libc.handleCircleBurst = function(circle)
+    assert(circle.r == 5)
     burstCount = burstCount + 1
 end
 libc.update()
@@ -86,7 +86,7 @@ end)
 
 -- ensure that at least 2 of them burst
 local burstCount = 0
-libc.handleCircleBurst = function(x, y, z)
+libc.handleCircleBurst = function(circle)
   burstCount = burstCount + 1
 end
 libc.update()

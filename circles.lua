@@ -6,12 +6,12 @@ music = require 'musicutil'
 beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
-libc.handleCircleBurst = function(x, y, r)
+libc.handleCircleBurst = function(circle)
   local pixelsPerNote = 64 / #scale
-  local noteIndex = math.floor((y / pixelsPerNote) + 1)
+  local noteIndex = math.floor((circle.y / pixelsPerNote) + 1)
   local note = scale[noteIndex]
-  -- print(note)
-  engine.amp(r/100)
+  
+  engine.amp(circle.r/100)
   engine.hz(note)
 end
 

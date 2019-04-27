@@ -77,7 +77,6 @@ function libCircles._growCircles()
 end
 
 -- todo: refactor to return hit circles
--- todo: add unit test of 3 circles colliding
 function libCircles._detectCollisions()
   for i=1,#libCircles._circles do
 		local c = libCircles._circles[i]

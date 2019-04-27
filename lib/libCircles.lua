@@ -58,7 +58,11 @@ end
 -- updates the circles and calls the redraw function you set, if you set one
 function libCircles.update()
   libCircles._growCircles()
-	libCircles._detectCollisions()
+	local circlesToBurst = libCircles._detectCollisions()
+  for k,v in pairs(circlesToBurst) do
+    libCircles._notifyOfCircleBurst(k)
+    k.r = 1
+  end
 end
 
 function libCircles.updateCursor(dx, dy)
@@ -77,30 +81,38 @@ function libCircles._growCircles()
 	end	
 end
 
--- todo: refactor to return hit circles
 function libCircles._detectCollisions()
+  local circlesToBurst = {}
+  
   for i=1,#libCircles._circles do
-		local c = libCircles._circles[i]
-		if libCircles._isCircleTooBig(c) then
-		  libCircles._notifyOfCircleBurst(c)
-		end
-		local hitCircle = libCircles._didCircleAtIndexCollideWithOtherCircles(i)
-		if hitCircle ~= nil then
-		  if math.random(2) == 1 then
-		    libCircles._notifyOfCircleBurst(hitCircle)
-		  else
-		    libCircles._notifyOfCircleBurst(c)
-		  end
-		end
+    local c1 = libCircles._circles[i]
+    if libCircles._isCircleTooBig(c1) then
+      circlesToBurst[c1] = true
+    else
+      for j=i+1,#libCircles._circles do
+        local c2 = libCircles._circles[j]
+        
+        if libCircles._isCircleTooBig(c2) then
+          circlesToBurst[c2] = true
+        elseif libCircles._areCirclesTouching(c1, c2) then
+          -- randomly pick one to burst
+          if math.random(2) == 1 then
+            circlesToBurst[c1] = true
+          else
+            circlesToBurst[c2] = true
+          end
+        end
+      end 
+    end    
   end
+  
+  return circlesToBurst
 end
 
 function libCircles._notifyOfCircleBurst(c)
   if libCircles.handleCircleBurst ~= nil then
     libCircles.handleCircleBurst(c)
   end
-  -- todo: don't reset until we've detected and notified about all bursts
-  c.r = 1
 end
 
 function libCircles._isCircleTooBig(c)
@@ -114,23 +126,6 @@ function libCircles._isCircleTooBig(c)
   else 
     return c.r > 64
   end
-end
-
--- todo: fix name or implementation; name implies a BOOL return type
-function libCircles._didCircleAtIndexCollideWithOtherCircles(c1i)
-  -- compare c1 with other circles
-  local c1 = libCircles._circles[c1i]
-  
-  for c2i=1,#libCircles._circles do
-    if c1i ~= c2i then
-      local c2 = libCircles._circles[c2i]
-      if libCircles._areCirclesTouching(c1, c2) then
-        return c2
-      end
-    end
-  end
-  
-  return nil
 end
 
 function libCircles._areCirclesTouching(c1, c2)

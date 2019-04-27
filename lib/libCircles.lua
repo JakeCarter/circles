@@ -7,8 +7,15 @@ libCircles._circles = {}
 
 -- cursor position
 libCircles.p = {}
-libCircles.p.x = 128/2
-libCircles.p.y = 64/2
+
+function libCircles._reset()
+  libCircles._circles = {}
+  
+  libCircles.p = {}
+  libCircles.p.x = 128/2
+  libCircles.p.y = 64/2
+end
+libCircles._reset()
   
 -- adds a new circle at x, y and returns its index
 function libCircles.addCircle(x, y)

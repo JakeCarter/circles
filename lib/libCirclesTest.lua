@@ -43,8 +43,13 @@ libc.addCircle(10, 20)
 assert(#libc._circles == 1)
 assert(libc._circles[1].x == 10)
 assert(libc._circles[1].y == 20)
-libc.removeAllCircles()
 
+-- test reset
+libc._reset()
+assert(deepcompare(libc.p, {["x"] = 64, ["y"] = 32}))
+assert(#libc._circles == 0)
+
+-- test burst
 libc.p.x = 30
 libc.addCircle()
 libc.p.x = 40
@@ -53,7 +58,6 @@ assert(#libc._circles == 2)
 assert(libc._circles[1].r == 1)
 assert(libc._circles[2].r == 1)
 
--- test burst
 libc.update()
 libc.update()
 libc.update()

@@ -70,5 +70,19 @@ libc.update()
 assert((libc._circles[1].r == 1 and libc._circles[2].r == 5) or (libc._circles[1].r == 5 and libc._circles[2].r == 1))
 assert(burstCount == 1)
 
+-- test keeping cursor on screen: lower bound
+libc.p.x = 0
+libc.p.y = 0
+libc.updateCursor(-1,-1)
+assert(libc.p.x == 0)
+assert(libc.p.y == 0)
+
+-- test keeping cursor on screen: upper bound
+libc.p.x = 128
+libc.p.y = 64
+libc.updateCursor(1,1)
+assert(libc.p.x == 128)
+assert(libc.p.y == 64)
+
 print("all tests passed!")
 

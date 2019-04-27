@@ -52,21 +52,8 @@ function libCircles.update()
 end
 
 function libCircles.updateCursor(dx, dy)
-  libCircles.p.x = libCircles.p.x + dx
-  -- todo: update to using min/max to clamp and add unit tests
-  if libCircles.p.x < 0 then
-    libCircles.p.x = 0
-  elseif libCircles.p.x > 128 then
-    libCircles.p.x = 128
-  end
-
-  libCircles.p.y = libCircles.p.y + dy
-  -- todo: update to using min/max to clamp and add unit tests
-  if libCircles.p.y < 0 then
-    libCircles.p.y = 0
-  elseif libCircles.p.y > 64 then
-    libCircles.p.y = 64
-  end
+  libCircles.p.x = libCircles._clamp(libCircles.p.x + dx, 0, 128)
+  libCircles.p.y = libCircles._clamp(libCircles.p.y + dy, 0, 64)
 end
 
 --[[ 
@@ -143,6 +130,16 @@ function libCircles._areCirclesTouching(c1, c2)
 	else
 		return true
 	end
+end
+
+function libCircles._clamp(value, min, max)
+  if value < min then
+    return min
+  elseif value > max then
+    return max
+  else
+    return value
+  end
 end
 
 return libCircles

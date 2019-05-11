@@ -1,4 +1,21 @@
--- circles
+-- oO ( circles ) Oo
+-- v1.0 @jakecarter
+-- llllllll.co/t/xxxxx
+-- 
+-- ENC 2 & 3 move cursor
+-- ENC 1: engine.release
+-- 
+-- KEY 3: Place circle
+-- KEY 2: Remove last circle
+-- KEY 1: Hold to remove all
+-- 
+-- Notes divided along screen x
+-- Timbre divided along screen y
+-- Bigger circles are louder
+--
+-- Enjoy
+--
+
 
 engine.name = 'PolyPerc'
 
@@ -7,16 +24,22 @@ beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
 libc.handleCircleBurst = function(circle)
-  local pixelsPerNote = 64 / #scale
-  local noteIndex = math.floor((circle.y / pixelsPerNote) + 1)
-  local note = scale[noteIndex]
+  engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
   
-  engine.amp(circle.r/100)
-  engine.hz(note)
+  engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
+  
+  -- maybe try this too; you might like?
+  -- engine.cutoff(_scale(circle.y, 0, 64, 200, 2500))
+  
+  local noteIndex = math.floor(_scale(circle.x, 0, 128, 1, #scale))
+  engine.hz(scale[noteIndex])
+  
+  
 end
 
 steps = {}
 position = 1
+release = 0.5
 
 mode = math.random(#music.SCALES)
 scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
@@ -96,10 +119,22 @@ function key(n,z)
 end
 
 function enc(n,d)
-  if n == 2 then
+  if n == 1 then
+    release = release + (d * 0.05)
+    if release < 0 then
+      release = 0
+    elseif release > 1 then
+      release = 1
+    end
+    engine.release(release)
+  elseif n == 2 then
     libc.updateCursor(d,0)
   elseif n == 3 then
     libc.updateCursor(0,d)
   end
   redraw()
+end
+
+function _scale(i, imin, imax, omin, omax)
+  return ((i - imin) / (imax - imin)) * (omax - omin) + omin;
 end

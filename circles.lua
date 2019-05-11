@@ -24,8 +24,8 @@ beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
 libc.handleCircleBurst = function(circle)
-  engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
-  
+  -- engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
+  engine.release(_scale(circle.r, 1, 64, 0.03, 1))
   engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
   
   -- maybe try this too; you might like?
@@ -39,7 +39,7 @@ end
 
 steps = {}
 position = 1
-release = 0.5
+cutoff = 1000
 
 mode = math.random(#music.SCALES)
 scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
@@ -120,13 +120,13 @@ end
 
 function enc(n,d)
   if n == 1 then
-    release = release + (d * 0.05)
-    if release < 0 then
-      release = 0
-    elseif release > 1 then
-      release = 1
+    cutoff = cutoff + (d * 10)
+    if cutoff < 0 then
+      cutoff = 0
+    elseif cutoff > 20000 then
+      release = 20000
     end
-    engine.release(release)
+    engine.cutoff(cutoff)
   elseif n == 2 then
     libc.updateCursor(d,0)
   elseif n == 3 then

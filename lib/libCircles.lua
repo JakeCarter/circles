@@ -1,4 +1,4 @@
--- libCircles.lua by @JakeCarter
+-- libCircles.lua by @jakecarter
 -- libCircles is a circle sequencer. Clients can add circles to the system, when two circles touch a random one is chosen to burst. When it bursts it calls a handler that the client sets.
 -- Public API:
 --  Properties:
@@ -17,13 +17,16 @@ local libCircles = {}
 
 libCircles.p = {}
 libCircles.shouldBurstOnScreenEdge = false
+libCircles.screen_width = 128
+libCircles.screen_height = 64
+
 
 function libCircles.reset()
   libCircles._circles = {}
   
   libCircles.p = {}
-  libCircles.p.x = 128/2
-  libCircles.p.y = 64/2
+  libCircles.p.x = libCircles.screen_width/2
+  libCircles.p.y = libCircles.screen_height/2
   
   libCircles.handleCircleBurst = nil
 end
@@ -84,8 +87,8 @@ end
 -- @param dx The x delta that is added to p.x
 -- @param dy The y delta that is added to p.y
 function libCircles.updateCursor(dx, dy)
-  libCircles.p.x = libCircles._clamp(libCircles.p.x + dx, 0, 128)
-  libCircles.p.y = libCircles._clamp(libCircles.p.y + dy, 0, 64)
+  libCircles.p.x = libCircles._clamp(libCircles.p.x + dx, 0, libCircles.screen_width-1)
+  libCircles.p.y = libCircles._clamp(libCircles.p.y + dy, 0, libCircles.screen_height-1)
 end
 
 --[[ 
@@ -140,9 +143,9 @@ function libCircles._isCircleTooBig(c)
     local bottom = c.y + c.r
     local left = c.x - c.r
     
-    return top < 0 or right > 128 or bottom > 64 or left < 0
+    return top < 0 or right > libCircles.screen_width or bottom > libCircles.screen_height or left < 0
   else 
-    return c.r > 64
+    return c.r > libCircles.screen_height
   end
 end
 

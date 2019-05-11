@@ -69,8 +69,8 @@ assert(libc.p.y == 0)
 libc.p.x = 128
 libc.p.y = 64
 libc.updateCursor(1,1)
-assert(libc.p.x == 128)
-assert(libc.p.y == 64)
+assert(libc.p.x == 128-1)
+assert(libc.p.y == 64-1)
 
 -- test 3 circles colliding
 libc.reset()

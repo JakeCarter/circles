@@ -96,7 +96,7 @@ function redraw()
     end)
   end
   
-  screen.updateCircles()
+  screen.update()
 end
 
 function key(n,z)

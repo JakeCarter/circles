@@ -11,7 +11,7 @@
 -- 
 -- Notes divided along screen x
 -- Timbre divided along screen y
--- Bigger circles longer release
+-- Bigger circles, longer release
 --
 -- Enjoy
 --

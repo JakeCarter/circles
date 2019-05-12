@@ -24,7 +24,7 @@ beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
 libc.handleCircleBurst = function(circle)
-  if params:get("radius_effects") == 1 then
+  if params:get("radius_affects") == 1 then
     engine.release(_scale(circle.r, 1, 64, 0.03, 1))
     engine.amp(0.3)
   else
@@ -69,7 +69,7 @@ function init()
     end
   end)
 
-  params:add_option("radius_effects", "radius effects", { "release", "amp" })
+  params:add_option("radius_affects", "radius affects", { "release", "amp" })
   
   params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
   params:set_action("cutoff", function(x)

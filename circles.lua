@@ -24,17 +24,15 @@ beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
 libc.handleCircleBurst = function(circle)
-  if radius_effects == 1 then
+  if params:get("radius_effects") == 1 then
     engine.release(_scale(circle.r, 1, 64, 0.03, 1))
+    engine.amp(0.3)
   else
     engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
+    engine.release(0.5)
   end
   
-  if y_effects == 1 then
-      engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
-  else
-    engine.cutoff(_scale(circle.y, 0, 64, 200, 2500))
-  end
+  engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
   
   local noteIndex = math.floor(_scale(circle.x, 0, 128, 1, #scale))
   engine.hz(scale[noteIndex])
@@ -42,7 +40,6 @@ end
 
 steps = {}
 position = 1
-cutoff = 1000
 
 mode = math.random(#music.SCALES)
 scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
@@ -52,7 +49,6 @@ clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
 message = nil
-radius_effects = 1
 
 function init()
   screen.aa(1)
@@ -74,11 +70,11 @@ function init()
   end)
 
   params:add_option("radius_effects", "radius effects", { "release", "amp" })
---  params:set_action("radius_effects", function(x)
---    radius_effects = x
---  end)
-      
-  params:add_option("y_effects", "y effects", { "cutoff", "pw" })
+  
+  params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
+  params:set_action("cutoff", function(x)
+    engine.cutoff(x)
+  end)
   
   clk:start()
 end
@@ -131,13 +127,7 @@ end
 
 function enc(n,d)
   if n == 1 then
-    cutoff = cutoff + (d * 10)
-    if cutoff < 0 then
-      cutoff = 0
-    elseif cutoff > 20000 then
-      release = 20000
-    end
-    engine.cutoff(cutoff)
+    params:delta("cutoff", d)
   elseif n == 2 then
     libc.updateCursor(d,0)
   elseif n == 3 then

@@ -24,17 +24,20 @@ beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
 libc.handleCircleBurst = function(circle)
-  -- engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
-  engine.release(_scale(circle.r, 1, 64, 0.03, 1))
-  engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
+  if radius_effects == 1 then
+    engine.release(_scale(circle.r, 1, 64, 0.03, 1))
+  else
+    engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
+  end
   
-  -- maybe try this too; you might like?
-  -- engine.cutoff(_scale(circle.y, 0, 64, 200, 2500))
+  if y_effects == 1 then
+      engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
+  else
+    engine.cutoff(_scale(circle.y, 0, 64, 200, 2500))
+  end
   
   local noteIndex = math.floor(_scale(circle.x, 0, 128, 1, #scale))
   engine.hz(scale[noteIndex])
-  
-  
 end
 
 steps = {}
@@ -49,6 +52,7 @@ clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
 message = nil
+radius_effects = 1
 
 function init()
   screen.aa(1)
@@ -68,6 +72,13 @@ function init()
       libc.shouldBurstOnScreenEdge = true
     end
   end)
+
+  params:add_option("radius_effects", "radius effects", { "release", "amp" })
+--  params:set_action("radius_effects", function(x)
+--    radius_effects = x
+--  end)
+      
+  params:add_option("y_effects", "y effects", { "cutoff", "pw" })
   
   clk:start()
 end

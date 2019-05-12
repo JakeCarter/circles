@@ -3,7 +3,7 @@
 -- llllllll.co/t/xxxxx
 -- 
 -- ENC 2 & 3 move cursor
--- ENC 1: engine.release
+-- ENC 1: engine.cutoff
 -- 
 -- KEY 3: Place circle
 -- KEY 2: Remove last circle
@@ -11,7 +11,7 @@
 -- 
 -- Notes divided along screen x
 -- Timbre divided along screen y
--- Bigger circles are louder
+-- Bigger circles longer release
 --
 -- Enjoy
 --

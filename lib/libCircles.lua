@@ -57,6 +57,18 @@ function libCircles.removeCircle(index)
 	table.remove(libCircles._circles, index)
 end
 
+function libCircles.removeCircleAt(p)
+  p = p or libCircles.p
+  
+  local hitCircleIndex = nil
+  for i=1,#libCircles._circles do
+    if libCircles._isPointInCircle(p, c) then
+      libCircles.removeCircle(i)
+      break
+    else
+  end
+end
+
 --- removes all circles
 function libCircles.removeAllCircles()
   libCircles._circles = {}
@@ -160,6 +172,11 @@ function libCircles._areCirclesTouching(c1, c2)
 	else
 		return true
 	end
+end
+
+function libCircles._isPointInCircle(p, c)
+  local d = (p.x - c.x)^2 + (p.y - c.y)^2
+  return d <= (c.r^2)
 end
 
 function libCircles._clamp(value, min, max)

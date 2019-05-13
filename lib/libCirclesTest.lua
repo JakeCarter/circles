@@ -93,4 +93,42 @@ libc.updateCircles()
 assert(burstCount == 2)
 libc.reset()
 
+-- test remove circle at
+libc.addCircle(10, 10)
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+assert(libc._circles[1].r == 10)
+local p = {}
+p.x = 10
+p.y = 10
+assert(libc._isPointInCircle(p, libc._circles[1]))
+p.x = 15
+p.y = 10
+assert(libc._isPointInCircle(p, libc._circles[1]))
+p.x = 22
+p.y = 10
+assert(not libc._isPointInCircle(p, libc._circles[1]))
+p.x = 22
+p.y = 5
+assert(not libc._isPointInCircle(p, libc._circles[1]))
+p.x = 9
+p.y = 4
+assert(libc._isPointInCircle(p, libc._circles[1]))
+p.x = 1
+p.y = 1
+assert(not libc._isPointInCircle(p, libc._circles[1]))
+p.x = 20
+p.y = 10
+assert(libc._isPointInCircle(p, libc._circles[1]))
+p.x = -1
+p.y = 10
+assert(not libc._isPointInCircle(p, libc._circles[1]))
+
 print("all tests passed!")

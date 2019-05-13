@@ -60,12 +60,12 @@ end
 function libCircles.removeCircleAt(p)
   p = p or libCircles.p
   
-  local hitCircleIndex = nil
   for i=1,#libCircles._circles do
+    local c = libCircles._circles[i]
     if libCircles._isPointInCircle(p, c) then
       libCircles.removeCircle(i)
       break
-    else
+    end
   end
 end
 

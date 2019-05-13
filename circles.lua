@@ -118,7 +118,7 @@ function key(n,z)
     if message then
       message = nil
     else
-      libc.removeCircle()
+      libc.removeCircleAt()
     end
   elseif n == 1 and z == 1 then
     message = UI.Message.new({"Remove all circles?.", "", "KEY2 to cancel", "KEY3 to confirm"})

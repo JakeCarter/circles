@@ -6,8 +6,8 @@
 -- ENC 1: engine.cutoff
 -- 
 -- KEY 3: Place circle
--- KEY 2: Remove last circle
--- KEY 1: Hold to remove all
+-- KEY 2: Remove circle at cursor
+-- KEY 1: Hold removes all circles
 -- 
 -- Notes divided along screen x
 -- Timbre divided along screen y

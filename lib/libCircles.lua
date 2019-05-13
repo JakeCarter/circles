@@ -8,6 +8,7 @@
 --  Functions:
 --   addCircle(x, y) - adds a circle to the system and returns its index. x and y are optional. if they are omitted, a cirlce will be added at p.x, p.y
 --   removeCircle(index) - removes the circle at the given index. index is optional. if it is omitted, the last circle will be removed
+--   removeCircleAt(p) - removes circle at the given point, where point is any point inside the circle. p is optional, defaults to the cursor position 
 --   removeAllCircles() - removes all circles
 --   forEachCirlce(handler) - iterates through each circle calling the handler passing in the current circle
 --   updateCircles() - increments each circle's size and runs collision detection
@@ -57,6 +58,8 @@ function libCircles.removeCircle(index)
 	table.remove(libCircles._circles, index)
 end
 
+-- removes the first circle found that contains p
+-- @param p point contained within the circle to remove
 function libCircles.removeCircleAt(p)
   p = p or libCircles.p
   

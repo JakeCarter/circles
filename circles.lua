@@ -53,7 +53,7 @@ message = nil
 function init()
   screen.aa(1)
   
-  clk.on_step = count
+  clk.on_step = on_clk_step
   clk:add_clock_params()
   
   params:add_separator()
@@ -79,7 +79,7 @@ function init()
   clk:start()
 end
 
-function count()
+function on_clk_step()
   libc.updateCircles()
   redraw()
 end

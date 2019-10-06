@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.0 @jakecarter
+-- v1.1 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor
@@ -15,27 +15,45 @@
 --
 -- Enjoy
 --
+-- Release Notes
+-- v1.1 - Crow
+-- input 2 - Clock
+-- output 1 - Trigger
+-- output 2 - Pitch
+-- output 3 - Y Pos  (0 - 10V)
+-- output 4 - Radius (0 - 10V)
+--
 
 
 engine.name = 'PolyPerc'
+
+crow.output[1].action = "pulse(0.1, 5, 1)"
 
 music = require 'musicutil'
 beatclock = require 'beatclock'
 UI = require "ui"
 libc = include('lib/libCircles')
 libc.handleCircleBurst = function(circle)
-  if params:get("radius_affects") == 1 then
-    engine.release(_scale(circle.r, 1, 64, 0.03, 1))
-    engine.amp(0.3)
-  else
-    engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
-    engine.release(0.5)
-  end
-  
-  engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
-  
   local noteIndex = math.floor(_scale(circle.x, 0, 128, 1, #scale))
-  engine.hz(scale[noteIndex])
+  local note = scale[noteIndex]
+
+  if options.output == outputs.audio then
+    if params:get("radius_affects") == 1 then
+      engine.release(_scale(circle.r, 1, 64, 0.03, 1))
+      engine.amp(0.3)
+    else
+      engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
+      engine.release(0.5)
+    end
+  
+    engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
+    engine.hz(note)
+  elseif options.output == outputs.crow then
+    crow.output[2].volts = (note - 60) / 12
+    crow.output[3].volts = _scale(circle.y, 1, 64, 0.01, 10)
+    crow.output[4].volts = _scale(circle.r, 0, 64, 0.01, 10)
+    crow.output[1].execute()
+  end
 end
 
 steps = {}
@@ -48,14 +66,56 @@ clk = beatclock.new()
 clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
+outputs = { audio = 1, crow = 2 }
+clocks = { midi = 1, crow = 2 }
+
+options = {}
+options.output = outputs.audio
+options.clock = clocks.midi
+
 message = nil
 
-function init()
-  screen.aa(1)
+function setupParams()
+  params:clear()
   
-  clk.on_step = count
-  clk:add_clock_params()
+  params:add{type = "option", id = "output", name = "output", default = options.output,
+    options = { "audio", "crow" },
+    action = function(value)
+      options.output = value
+      setupParams()
+    end
+  }
   
+  if options.output == outputs.audio then
+    params:add_option("radius_affects", "radius affects", { "release", "amp" })
+  
+    params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
+    params:set_action("cutoff", function(x)
+      engine.cutoff(x)
+    end)
+  end
+  params:add_separator()
+  
+  params:add{type = "option", id = "clock", name = "clock", default = options.clock,
+    options = { "midi", "crow" },
+    action = function(value)
+      options.clock = value
+      setupParams()
+    end
+  }
+  
+  if options.clock == clocks.midi then
+    clk:add_clock_params()
+    clk.on_step = step
+    clk:start()
+  elseif options.clock == clocks.crow then
+    clk:stop()
+    
+    crow.input[2].mode("change",1,0.1,"rising")
+    crow.input[2].change = function(s)
+      step()
+    end
+  end
   params:add_separator()
   
   params:add_option("keep_on_screen", "keep on screen", { "no", "yes" })
@@ -68,18 +128,15 @@ function init()
       libc.shouldBurstOnScreenEdge = true
     end
   end)
-
-  params:add_option("radius_affects", "radius affects", { "release", "amp" })
-  
-  params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
-  params:set_action("cutoff", function(x)
-    engine.cutoff(x)
-  end)
-  
-  clk:start()
 end
 
-function count()
+function init()
+  screen.aa(1)
+
+  setupParams() 
+end
+
+function step()
   libc.updateCircles()
   redraw()
 end

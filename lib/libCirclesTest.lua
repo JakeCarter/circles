@@ -1,4 +1,5 @@
-local libc = dofile('/Users/jake/Code/norns/circles/lib/libCircles.lua')
+--local libc = dofile('/Users/jake/Code/norns/circles/lib/libCircles.lua')
+local libc = dofile('/home/we/dust/code/carter/circles/lib/libCircles.lua')
 
 -- test default values
 assert(libc ~= nil)
@@ -33,6 +34,7 @@ assert(#libc._circles == 0)
 assert(libc.handleCircleBurst == nil)
 
 -- test burst
+libc.burst_type = 1
 libc.p.x = 30
 libc.addCircle()
 libc.p.x = 40
@@ -57,6 +59,32 @@ libc.updateCircles()
 assert((libc._circles[1].r == 1 and libc._circles[2].r == 5) or (libc._circles[1].r == 5 and libc._circles[2].r == 1))
 assert(burstCount == 1)
 libc.reset()
+
+-- test deterministic burst. bigger bubble should burst
+libc.burst_type = 2
+assert(#libc._circles == 0)
+libc.p.x = 30
+libc.addCircle()
+libc.updateCircles()
+libc.p.x = 40
+libc.addCircle()
+assert(#libc._circles == 2)
+assert(libc._circles[1].r == 2)
+assert(libc._circles[2].r == 1)
+
+libc.updateCircles()
+libc.updateCircles()
+libc.updateCircles()
+burstCount = 0
+libc.handleCircleBurst = function(circle)
+    assert(circle.r == 5)
+    burstCount = burstCount + 1
+end
+libc.updateCircles()
+assert(libc._circles[1].r == 1 and libc._circles[2].r == 4)
+assert(burstCount == 1)
+libc.reset()
+libc.burst_type = 1
 
 -- test keeping cursor on screen: lower bound
 libc.p.x = 0

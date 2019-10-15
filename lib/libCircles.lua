@@ -18,6 +18,7 @@ local libCircles = {}
 
 libCircles.p = {}
 libCircles.shouldBurstOnScreenEdge = false
+libCircles.burst_type = 1 -- 1 = random, 2 = deterministic
 libCircles.screen_width = 128
 libCircles.screen_height = 64
 
@@ -131,11 +132,19 @@ function libCircles._detectCollisions()
         if libCircles._isCircleTooBig(c2) then
           circlesToBurst[c2] = true
         elseif libCircles._areCirclesTouching(c1, c2) then
-          -- randomly pick one to burst
-          if math.random(2) == 1 then
-            circlesToBurst[c1] = true
-          else
-            circlesToBurst[c2] = true
+	  if libCircles.burst_type == 1 then
+            -- randomly pick one to burst
+            if math.random(2) == 1 then
+              circlesToBurst[c1] = true
+            else
+              circlesToBurst[c2] = true
+            end
+	  elseif libCircles.burst_type == 2 then
+	    if c1.r > c2.r then
+	      circlesToBurst[c1] = true
+	    else
+	      circlesToBurst[c2] = true
+	    end
           end
         end
       end 

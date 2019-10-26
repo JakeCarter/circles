@@ -25,6 +25,7 @@ Added params for output; audio or crow. If crow:
  - Output 2: Pitch
  - Output 3: Y Pos  (0 - 10V)
  - Output 4: Radius (0 - 10V)
+ 
 Added params for clock; midi or crow. Crow accepts clock on input 2. I would like this to be on input 1, but there is currently a bug with norns or crow mentioned here (https://llllllll.co/t/crow-help-norns/25863/10).
 
 ## lib/libCircles.lua

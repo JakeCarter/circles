@@ -61,6 +61,11 @@ libc.handleCircleBurst = function(circle)
     crow.output[3].volts = _scale(circle.y, 1, 64, 0.01, 10)
     crow.output[4].volts = _scale(circle.r, 0, 64, 0.01, 10)
     crow.output[1].execute()
+  elseif options.output == outputs.crow_jf then
+    crow.ii.pullup(true)
+    crow.ii.jf.mode(1)
+    
+    crow.ii.jf.play_note((note - 60) / 12, 5)
   end
 end
 
@@ -74,7 +79,7 @@ clk = beatclock.new()
 clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
-outputs = { audio = 1, crow = 2 }
+outputs = { audio = 1, crow = 2, crow_jf = 3 }
 clock_sources = { midi = 1, crow = 2 }
 radius_affects = { release = 1, amp = 2 }
 
@@ -82,7 +87,7 @@ message = nil
 
 function setupParams()
   -- output
-  params:add_option("output", "output", { "audio", "crow" }, outputs.audio)
+  params:add_option("output", "output", { "audio", "crow", "crow + jf" }, outputs.audio)
   
   -- output: audio
   params:add_option("radius_affects", "radius affects", { "release", "amp" })

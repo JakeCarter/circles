@@ -35,8 +35,6 @@
 
 engine.name = 'PolyPerc'
 
-crow.output[1].action = "pulse(0.1, 5, 1)"
-
 music = require 'musicutil'
 beatclock = require 'beatclock'
 UI = require "ui"
@@ -61,11 +59,8 @@ libc.handleCircleBurst = function(circle)
     crow.output[3].volts = _scale(circle.y, 1, 64, 0.01, 10)
     crow.output[4].volts = _scale(circle.r, 0, 64, 0.01, 10)
     crow.output[1].execute()
-  elseif options.output == outputs.crow_jf then
-    crow.ii.pullup(true)
-    crow.ii.jf.mode(1)
-    
-    crow.ii.jf.play_note((note - 60) / 12, 5)
+  elseif params:get("output") == outputs.crow_jf then
+    crow.ii.jf.play_note((note - 60) / 12, _scale(circle.r, 1, 64, 1, 10))
   end
 end
 
@@ -88,6 +83,17 @@ message = nil
 function setupParams()
   -- output
   params:add_option("output", "output", { "audio", "crow", "crow + jf" }, outputs.audio)
+  params:set_action("output", function(value)
+    if value == outputs.crow then
+      crow.output[1].action = "pulse(0.1, 5, 1)"
+    elseif value == outputs.crow_jf then
+      crow.ii.pullup(true)
+      crow.ii.jf.mode(1)
+    else
+      crow.ii.jf.mode(0)
+      crow.ii.pullup(false)
+    end
+  end)
   
   -- output: audio
   params:add_option("radius_affects", "radius affects", { "release", "amp" })

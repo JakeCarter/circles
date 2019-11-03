@@ -35,51 +35,24 @@
 
 engine.name = 'PolyPerc'
 
-music = require("musicutil")
-beatclock = require("beatclock")
-UI = require("ui")
-math_helpers = include("lib/math_helpers")
-libc = include("lib/libCircles")
-libc.handleCircleBurst = function(circle)
-  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale))
-  local note = scale[noteIndex]
+-- inclues
+local music = require("musicutil")
+local beatclock = require("beatclock")
+local UI = require("ui")
+local math_helpers = include("lib/math_helpers")
+local libc = include("lib/libCircles")
 
-  if params:get("output") == outputs.audio then
-    if params:get("radius_affects") == radius_affects.release then
-      engine.release(math_helpers.scale(circle.r, 1, 64, 0.03, 1))
-      engine.amp(0.3)
-    else
-      engine.amp(math_helpers.scale(circle.r, 1, 64, 0.01, 1))
-      engine.release(0.5)
-    end
-  
-    engine.pw(math_helpers.scale(circle.y, 0, 64, 0.01, 1))
-    engine.hz(note)
-  elseif params:get("output") == outputs.crow then
-    crow.output[2].volts = (note - 60) / 12
-    crow.output[3].volts = math_helpers.scale(circle.y, 1, 64, 0.01, 10)
-    crow.output[4].volts = math_helpers.scale(circle.r, 0, 64, 0.01, 10)
-    crow.output[1].execute()
-  elseif params:get("output") == outputs.crow_jf then
-    crow.ii.jf.play_note((note - 60) / 12, _scale(circle.r, 1, 64, 1, 10))
-  end
-end
+-- state
+local mode = math.random(#music.SCALES)
+local scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
+local clk = beatclock.new()
+local clk_midi = midi.connect()
+local message = nil
 
-steps = {}
-position = 1
-
-mode = math.random(#music.SCALES)
-scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
-
-clk = beatclock.new()
-clk_midi = midi.connect()
-clk_midi.event = clk.process_midi
-
-outputs = { audio = 1, crow = 2, crow_jf = 3 }
-clock_sources = { midi = 1, crow = 2 }
-radius_affects = { release = 1, amp = 2 }
-
-message = nil
+-- enums
+local outputs = { audio = 1, crow = 2, crow_jf = 3 }
+local clock_sources = { midi = 1, crow = 2 }
+local radius_affects = { release = 1, amp = 2 }
 
 function setupParams()
   -- output
@@ -121,6 +94,7 @@ function setupParams()
       end
     end
   })
+  
   -- clock_sources: midi
   clk:add_clock_params()
   params:add_separator()
@@ -148,13 +122,41 @@ end
 
 function init()
   screen.aa(1)
-
+  
+  libc.handleCircleBurst = handleCircleBurst
+  clk_midi.event = clk.process_midi
+  
   setupParams()
 end
 
 function step()
   libc.updateCircles()
   redraw()
+end
+
+function handleCircleBurst(circle)
+  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale))
+  local note = scale[noteIndex]
+
+  if params:get("output") == outputs.audio then
+    if params:get("radius_affects") == radius_affects.release then
+      engine.release(math_helpers.scale(circle.r, 1, 64, 0.03, 1))
+      engine.amp(0.3)
+    else
+      engine.amp(math_helpers.scale(circle.r, 1, 64, 0.01, 1))
+      engine.release(0.5)
+    end
+    
+    engine.pw(math_helpers.scale(circle.y, 0, 64, 0.01, 1))
+    engine.hz(note)
+  elseif params:get("output") == outputs.crow then
+    crow.output[2].volts = (note - 60) / 12
+    crow.output[3].volts = math_helpers.scale(circle.y, 1, 64, 0.01, 10)
+    crow.output[4].volts = math_helpers.scale(circle.r, 0, 64, 0.01, 10)
+    crow.output[1].execute()
+  elseif params:get("output") == outputs.crow_jf then
+    crow.ii.jf.play_note((note - 60) / 12, _scale(circle.r, 1, 64, 1, 10))
+  end
 end
 
 function redraw()

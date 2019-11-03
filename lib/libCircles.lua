@@ -14,7 +14,7 @@
 --   updateCircles() - increments each circle's size and runs collision detection
 --   updateCursor(dx, dy) - updates p with the given x, y deltas
 
-local math_helpers = require("math_helpers")
+local math_helpers = include("lib/math_helpers")
 math.randomseed(os.time())
 
 local libCircles = {}

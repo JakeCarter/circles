@@ -35,29 +35,30 @@
 
 engine.name = 'PolyPerc'
 
-music = require 'musicutil'
-beatclock = require 'beatclock'
-UI = require "ui"
-libc = include('lib/libCircles')
+music = require("musicutil")
+beatclock = require("beatclock")
+UI = require("ui")
+math_helpers = include("lib/math_helpers")
+libc = include("lib/libCircles")
 libc.handleCircleBurst = function(circle)
-  local noteIndex = math.floor(_scale(circle.x, 0, 128, 1, #scale))
+  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale))
   local note = scale[noteIndex]
 
   if params:get("output") == outputs.audio then
     if params:get("radius_affects") == radius_affects.release then
-      engine.release(_scale(circle.r, 1, 64, 0.03, 1))
+      engine.release(math_helpers.scale(circle.r, 1, 64, 0.03, 1))
       engine.amp(0.3)
     else
-      engine.amp(_scale(circle.r, 1, 64, 0.01, 1))
+      engine.amp(math_helpers.scale(circle.r, 1, 64, 0.01, 1))
       engine.release(0.5)
     end
   
-    engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
+    engine.pw(math_helpers.scale(circle.y, 0, 64, 0.01, 1))
     engine.hz(note)
   elseif params:get("output") == outputs.crow then
     crow.output[2].volts = (note - 60) / 12
-    crow.output[3].volts = _scale(circle.y, 1, 64, 0.01, 10)
-    crow.output[4].volts = _scale(circle.r, 0, 64, 0.01, 10)
+    crow.output[3].volts = math_helpers.scale(circle.y, 1, 64, 0.01, 10)
+    crow.output[4].volts = math_helpers.scale(circle.r, 0, 64, 0.01, 10)
     crow.output[1].execute()
   elseif params:get("output") == outputs.crow_jf then
     crow.ii.jf.play_note((note - 60) / 12, _scale(circle.r, 1, 64, 1, 10))
@@ -206,8 +207,4 @@ function enc(n,d)
     libc.updateCursor(0,d)
   end
   redraw()
-end
-
-function _scale(i, imin, imax, omin, omax)
-  return ((i - imin) / (imax - imin)) * (omax - omin) + omin;
 end

@@ -14,6 +14,7 @@
 --   updateCircles() - increments each circle's size and runs collision detection
 --   updateCursor(dx, dy) - updates p with the given x, y deltas
 
+local math_helpers = require("math_helpers")
 math.randomseed(os.time())
 
 local libCircles = {}
@@ -105,8 +106,8 @@ end
 -- @param dx The x delta that is added to p.x
 -- @param dy The y delta that is added to p.y
 function libCircles.updateCursor(dx, dy)
-  libCircles.p.x = libCircles._clamp(libCircles.p.x + dx, 0, libCircles.screen_width-1)
-  libCircles.p.y = libCircles._clamp(libCircles.p.y + dy, 0, libCircles.screen_height-1)
+  libCircles.p.x = math_helpers.clamp(libCircles.p.x + dx, 0, libCircles.screen_width-1)
+  libCircles.p.y = math_helpers.clamp(libCircles.p.y + dy, 0, libCircles.screen_height-1)
 end
 
 --[[ 
@@ -190,16 +191,6 @@ end
 function libCircles._isPointInCircle(p, c)
   local d = (p.x - c.x)^2 + (p.y - c.y)^2
   return d <= (c.r^2)
-end
-
-function libCircles._clamp(value, min, max)
-  if value < min then
-    return min
-  elseif value > max then
-    return max
-  else
-    return value
-  end
 end
 
 return libCircles

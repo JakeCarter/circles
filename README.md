@@ -17,6 +17,9 @@ The size determins how long the sound will last. Larger circles will sound out f
 
 There are also a few parameters to adjust under the _KEY 1_ parameters page. Play around with those.
 
+### v1.2
+Added deterministic burst type option. This should allow for more loop like rhythms.
+
 ### v1.1
 Added crow support.
 

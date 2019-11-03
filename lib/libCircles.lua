@@ -14,13 +14,14 @@
 --   updateCircles() - increments each circle's size and runs collision detection
 --   updateCursor(dx, dy) - updates p with the given x, y deltas
 
-local burst_types = { random = 1, deterministic = 2 }
+math.randomseed(os.time())
 
 local libCircles = {}
 
 libCircles.p = {}
+libCircles.burst_types = { random = 1, deterministic = 2 }
 libCircles.shouldBurstOnScreenEdge = false
-libCircles.burst_type = burst_types.random
+libCircles.burst_type = libCircles.burst_types.random
 libCircles.screen_width = 128
 libCircles.screen_height = 64
 
@@ -133,14 +134,13 @@ function libCircles._detectCollisions()
         if libCircles._isCircleTooBig(c2) then
           circlesToBurst[c2] = true
         elseif libCircles._areCirclesTouching(c1, c2) then
-          if libCircles.burst_type == burst_types.random then
-            -- randomly pick one to burst
-            if math.random(2) == 1 then
+          if libCircles.burst_type == libCircles.burst_types.random then
+            if math.random(2) == 1 and circlesToBurst[c1] ~= true then
               circlesToBurst[c1] = true
             else
               circlesToBurst[c2] = true
             end
-          elseif libCircles.burst_type == burst_types.deterministic then
+          elseif libCircles.burst_type == libCircles.burst_types.deterministic then
             if c1.r > c2.r then
               circlesToBurst[c1] = true
             else

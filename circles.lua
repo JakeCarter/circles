@@ -128,6 +128,11 @@ function setupParams()
       libc.shouldBurstOnScreenEdge = true
     end
   end)
+  
+  params:add_option("burst type", "burst type", { "random", "deterministic"})
+  params:set_action("burst type", function(value)
+    libc.burst_type = value
+  end)
 end
 
 function init()

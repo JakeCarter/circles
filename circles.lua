@@ -41,8 +41,8 @@ libc.handleCircleBurst = function(circle)
   local noteIndex = math.floor(_scale(circle.x, 0, 128, 1, #scale))
   local note = scale[noteIndex]
 
-  if options.output == outputs.audio then
-    if params:get("radius_affects") == 1 then
+  if params:get("output") == outputs.audio then
+    if params:get("radius_affects") == radius_affects.release then
       engine.release(_scale(circle.r, 1, 64, 0.03, 1))
       engine.amp(0.3)
     else
@@ -52,7 +52,7 @@ libc.handleCircleBurst = function(circle)
   
     engine.pw(_scale(circle.y, 0, 64, 0.01, 1))
     engine.hz(note)
-  elseif options.output == outputs.crow then
+  elseif params:get("output") == outputs.crow then
     crow.output[2].volts = (note - 60) / 12
     crow.output[3].volts = _scale(circle.y, 1, 64, 0.01, 10)
     crow.output[4].volts = _scale(circle.r, 0, 64, 0.01, 10)
@@ -71,60 +71,48 @@ clk_midi = midi.connect()
 clk_midi.event = clk.process_midi
 
 outputs = { audio = 1, crow = 2 }
-clocks = { midi = 1, crow = 2 }
-
-options = {}
-options.output = outputs.audio
-options.clock = clocks.midi
+clock_sources = { midi = 1, crow = 2 }
+radius_affects = { release = 1, amp = 2 }
 
 message = nil
 
 function setupParams()
-  params:clear()
+  -- output
+  params:add_option("output", "output", { "audio", "crow" }, outputs.audio)
   
-  params:add{type = "option", id = "output", name = "output", default = options.output,
-    options = { "audio", "crow" },
-    action = function(value)
-      options.output = value
-      setupParams()
-    end
-  }
-  
-  if options.output == outputs.audio then
-    params:add_option("radius_affects", "radius affects", { "release", "amp" })
-  
-    params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
-    params:set_action("cutoff", function(x)
-      engine.cutoff(x)
-    end)
-  end
+  -- output: audio
+  params:add_option("radius_affects", "radius affects", { "release", "amp" })
+  params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
+  params:set_action("cutoff", function(x)
+    engine.cutoff(x)
+  end)
   params:add_separator()
   
-  params:add{type = "option", id = "clock", name = "clock", default = options.clock,
+  -- clock_sources
+  params:add({type = "option", id = "clock_source", name = "clock source", default = clock_sources.midi,
     options = { "midi", "crow" },
     action = function(value)
-      options.clock = value
-      setupParams()
+      if value == clock_sources.midi then
+        clk.on_step = step
+        clk:start()
+      elseif value == clock_sources.crow then
+        clk:stop()
+        
+        crow.input[2].mode("change",1,0.1,"rising")
+        crow.input[2].change = function(s)
+          step()
+        end
+      end
     end
-  }
-  
-  if options.clock == clocks.midi then
-    clk:add_clock_params()
-    clk.on_step = step
-    clk:start()
-  elseif options.clock == clocks.crow then
-    clk:stop()
-    
-    crow.input[2].mode("change",1,0.1,"rising")
-    crow.input[2].change = function(s)
-      step()
-    end
-  end
+  })
+  -- clock_sources: midi
+  clk:add_clock_params()
   params:add_separator()
   
+  -- libCircles
   params:add_option("keep_on_screen", "keep on screen", { "no", "yes" })
-  params:set_action("keep_on_screen", function(x)
-    if x == 1 then
+  params:set_action("keep_on_screen", function(value)
+    if value == 1 then
       -- no
       libc.shouldBurstOnScreenEdge = false
     else
@@ -137,12 +125,15 @@ function setupParams()
   params:set_action("burst type", function(value)
     libc.burst_type = value
   end)
+  
+  params:default()
+  params:bang()
 end
 
 function init()
   screen.aa(1)
 
-  setupParams() 
+  setupParams()
 end
 
 function step()

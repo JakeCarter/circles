@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.1 @jakecarter
+-- v1.2 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor
@@ -16,6 +16,10 @@
 -- Enjoy
 --
 -- Release Notes
+-- v1.2
+-- Added param for determinsitc
+-- burst type.
+--
 -- v1.1 - Crow
 -- input 2 - Clock
 -- output 1 - Trigger

@@ -52,8 +52,8 @@ assert(libc._circles[2].r == 4)
 -- a random circle will burst. we don't know which one. assert that only 1 of them has burst.
 local burstCount = 0
 libc.handleCircleBurst = function(circle)
-    assert(circle.r == 5)
-    burstCount = burstCount + 1
+  assert(circle.r == 5)
+  burstCount = burstCount + 1
 end
 libc.updateCircles()
 assert((libc._circles[1].r == 1 and libc._circles[2].r == 5) or (libc._circles[1].r == 5 and libc._circles[2].r == 1))
@@ -77,8 +77,8 @@ libc.updateCircles()
 libc.updateCircles()
 burstCount = 0
 libc.handleCircleBurst = function(circle)
-    assert(circle.r == 5)
-    burstCount = burstCount + 1
+  assert(circle.r == 5)
+  burstCount = burstCount + 1
 end
 libc.updateCircles()
 assert(libc._circles[1].r == 1 and libc._circles[2].r == 4)
@@ -109,7 +109,7 @@ libc.updateCircles()
 libc.updateCircles()
 libc.updateCircles()
 libc.forEachCircle(function(c)
-    assert(c.r == 4)
+  assert(c.r == 4)
 end)
 
 -- ensure that at least 2 of them burst

@@ -14,11 +14,13 @@
 --   updateCircles() - increments each circle's size and runs collision detection
 --   updateCursor(dx, dy) - updates p with the given x, y deltas
 
+local burst_types = { random = 1, deterministic = 2 }
+
 local libCircles = {}
 
 libCircles.p = {}
 libCircles.shouldBurstOnScreenEdge = false
-libCircles.burst_type = 1 -- 1 = random, 2 = deterministic
+libCircles.burst_type = burst_types.random
 libCircles.screen_width = 128
 libCircles.screen_height = 64
 
@@ -41,14 +43,13 @@ function libCircles.addCircle(x, y)
   x = x or libCircles.p.x
   y = y or libCircles.p.y
   
-	local c = {}
-	c.x = x
-	c.y = y
-	c.r = 1
-	
-	table.insert(libCircles._circles, c)
-		
-	return #libCircles._circles
+  local c = {}
+  c.x = x
+  c.y = y
+  c.r = 1
+  table.insert(libCircles._circles, c)
+  
+  return #libCircles._circles
 end	
 
 --- removes the circle at the given index
@@ -56,7 +57,7 @@ end
 function libCircles.removeCircle(index)
   index = index or #libCircles._circles
   
-	table.remove(libCircles._circles, index)
+  table.remove(libCircles._circles, index)
 end
 
 -- removes the first circle found that contains p
@@ -85,14 +86,14 @@ function libCircles.forEachCircle(handler)
     for i=1,#libCircles._circles do
       local c = libCircles._circles[i]
       handler(c)
-	  end
-	end
+    end
+  end
 end
 
 --- updates the circles and performs collision detection
 function libCircles.updateCircles()
   libCircles._growCircles()
-	local circlesToBurst = libCircles._detectCollisions()
+  local circlesToBurst = libCircles._detectCollisions()
   for k,v in pairs(circlesToBurst) do
     libCircles._notifyOfCircleBurst(k)
     k.r = 1
@@ -112,10 +113,10 @@ Private Helpers
 --]]
 
 function libCircles._growCircles()
-	for i=1,#libCircles._circles do
-		local c = libCircles._circles[i]
-		c.r = c.r + 1
-	end	
+  for i=1,#libCircles._circles do
+    local c = libCircles._circles[i]
+    c.r = c.r + 1
+  end	
 end
 
 function libCircles._detectCollisions()
@@ -132,19 +133,19 @@ function libCircles._detectCollisions()
         if libCircles._isCircleTooBig(c2) then
           circlesToBurst[c2] = true
         elseif libCircles._areCirclesTouching(c1, c2) then
-	  if libCircles.burst_type == 1 then
+          if libCircles.burst_type == burst_types.random then
             -- randomly pick one to burst
             if math.random(2) == 1 then
               circlesToBurst[c1] = true
             else
               circlesToBurst[c2] = true
             end
-	  elseif libCircles.burst_type == 2 then
-	    if c1.r > c2.r then
-	      circlesToBurst[c1] = true
-	    else
-	      circlesToBurst[c2] = true
-	    end
+          elseif libCircles.burst_type == burst_types.deterministic then
+            if c1.r > c2.r then
+              circlesToBurst[c1] = true
+            else
+              circlesToBurst[c2] = true
+            end
           end
         end
       end 
@@ -174,16 +175,16 @@ function libCircles._isCircleTooBig(c)
 end
 
 function libCircles._areCirclesTouching(c1, c2)
-	local distSq = (c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)
-	local radSumSq = (c1.r + c2.r) * (c1.r + c2.r)
-	
-	if distSq == radSumSq then
-	  return true
-	elseif distSq > radSumSq then
-		return false
-	else
-		return true
-	end
+  local distSq = (c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)
+  local radSumSq = (c1.r + c2.r) * (c1.r + c2.r)
+  
+  if distSq == radSumSq then
+    return true
+  elseif distSq > radSumSq then
+    return false
+  else
+    return true
+  end
 end
 
 function libCircles._isPointInCircle(p, c)

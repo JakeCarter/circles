@@ -155,7 +155,7 @@ function handleCircleBurst(circle)
     crow.output[4].volts = math_helpers.scale(circle.r, 0, 64, 0.01, 10)
     crow.output[1].execute()
   elseif params:get("output") == outputs.crow_jf then
-    crow.ii.jf.play_note((note - 60) / 12, _scale(circle.r, 1, 64, 1, 10))
+    crow.ii.jf.play_note((note - 60) / 12, math_helpers.scale(circle.r, 1, 64, 1, 10))
   end
 end
 

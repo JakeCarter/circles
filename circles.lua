@@ -46,17 +46,19 @@ local libc = include("lib/libCircles")
 local mode = math.random(#music.SCALES)
 local scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
 local clk = beatclock.new()
-local clk_midi = midi.connect()
+local midi = midi.connect()
 local message = nil
+local note_queue = {}
+local note_off_queue = {}
 
 -- enums
-local outputs = { audio = 1, crow = 2, crow_jf = 3 }
+local outputs = { audio = 1, crow = 2, crow_jf = 3, midi = 4 }
 local clock_sources = { midi = 1, crow = 2 }
 local radius_affects = { release = 1, amp = 2 }
 
 function setupParams()
   -- output
-  params:add_option("output", "output", { "audio", "crow", "crow + jf" }, outputs.audio)
+  params:add_option("output", "output", { "audio", "crow", "crow + jf", "midi" }, outputs.audio)
   params:set_action("output", function(value)
     if value == outputs.crow then
       crow.output[1].action = "pulse(0.1, 5, 1)"
@@ -124,7 +126,7 @@ function init()
   screen.aa(1)
   
   libc.handleCircleBurst = handleCircleBurst
-  clk_midi.event = clk.process_midi
+  midi.event = clk.process_midi
   
   setupParams()
 end
@@ -156,6 +158,22 @@ function handleCircleBurst(circle)
     crow.output[1].execute()
   elseif params:get("output") == outputs.crow_jf then
     crow.ii.jf.play_note((note - 60) / 12, math_helpers.scale(circle.r, 1, 64, 1, 10))
+  elseif params:get("output") == outputs.midi then
+    table.insert(note_queue, note)
+    play_notes()
+  end
+end
+
+function play_notes()
+  -- send note off for previously played notes
+  while #note_off_queue > 0 do
+    midi:send({type='note_off', note=table.remove(note_off_queue)})
+  end
+  -- play queued notes
+  while #note_queue > 0 do
+    local n = table.remove(note_queue)
+    midi:send({type='note_on', note=n})
+    table.insert(note_off_queue, n)
   end
 end
 

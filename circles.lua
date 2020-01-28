@@ -136,9 +136,14 @@ function step()
   redraw()
 end
 
-function handleCircleBurst(circle)
+function noteForCircle(circle)
   local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale))
   local note = scale[noteIndex]
+  return note
+end
+
+function handleCircleBurst(circle)
+  local note = noteForCircle(circle)
 
   if params:get("output") == outputs.audio then
     if params:get("radius_affects") == radius_affects.release then
@@ -159,22 +164,14 @@ function handleCircleBurst(circle)
   elseif params:get("output") == outputs.crow_jf then
     crow.ii.jf.play_note((note - 60) / 12, math_helpers.scale(circle.r, 1, 64, 1, 10))
   elseif params:get("output") == outputs.midi then
-    table.insert(note_queue, note)
-    play_notes()
+    -- table.insert(note_queue, note)
+    play_note(note)
   end
 end
 
-function play_notes()
-  -- send note off for previously played notes
-  while #note_off_queue > 0 do
-    midi:send({type='note_off', note=table.remove(note_off_queue)})
-  end
-  -- play queued notes
-  while #note_queue > 0 do
-    local n = table.remove(note_queue)
-    midi:send({type='note_on', note=n})
-    table.insert(note_off_queue, n)
-  end
+function play_note(note)
+    midi:send({type='note_off', note=note})
+    midi:send({type='note_on', note=note})
 end
 
 function redraw()
@@ -203,6 +200,10 @@ function key(n,z)
   if n == 3 and z == 1 then
     if message then
       message = nil
+      libc.forEachCircle(function(c)
+        local note = noteForCircle(c)
+        midi:send({type="note_off", note=note})
+      end)
       libc.removeAllCircles()
     else
       libc.addCircle()
@@ -211,7 +212,9 @@ function key(n,z)
     if message then
       message = nil
     else
-      libc.removeCircleAt()
+      local removedCircle = libc.removeCircleAt()
+      local note = noteForCircle(removedCircle)
+      midi:send({type="note_off", note=note})
     end
   elseif n == 1 and z == 1 then
     message = UI.Message.new({"Remove all circles?.", "", "KEY2 to cancel", "KEY3 to confirm"})

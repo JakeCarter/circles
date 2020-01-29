@@ -31,8 +31,7 @@ local scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
 local clk = beatclock.new()
 local midi = midi.connect()
 local message = nil
-local note_queue = {}
-local note_off_queue = {}
+local active_note_age_map = {}
 
 -- enums
 local outputs = { audio = 1, crow = 2, crow_jf = 3, midi = 4 }
@@ -115,6 +114,16 @@ function init()
 end
 
 function step()
+  -- kill old notes
+  for active_note, active_note_age in pairs(active_note_age_map) do
+    if active_note_age >= 1 then
+      midi:send({type='note_off', note=active_note})
+      active_note_age_map[active_note] = nil
+    else
+      active_note_age_map[active_note] = active_note_age + 1
+    end
+  end
+
   libc.updateCircles()
   redraw()
 end
@@ -147,14 +156,15 @@ function handleCircleBurst(circle)
   elseif params:get("output") == outputs.crow_jf then
     crow.ii.jf.play_note((note - 60) / 12, math_helpers.scale(circle.r, 1, 64, 1, 10))
   elseif params:get("output") == outputs.midi then
-    -- table.insert(note_queue, note)
     play_note(note)
   end
 end
 
 function play_note(note)
-    midi:send({type='note_off', note=note})
-    midi:send({type='note_on', note=note})
+  midi:send({type='note_off', note=note})
+  midi:send({type='note_on', note=note})
+  
+  active_note_age_map[note] = 1
 end
 
 function redraw()
@@ -186,6 +196,7 @@ function key(n,z)
       libc.forEachCircle(function(c)
         local note = noteForCircle(c)
         midi:send({type="note_off", note=note})
+        active_note_age_map[note] = nil
       end)
       libc.removeAllCircles()
     else
@@ -198,6 +209,7 @@ function key(n,z)
       local removedCircle = libc.removeCircleAt()
       local note = noteForCircle(removedCircle)
       midi:send({type="note_off", note=note})
+      active_note_age_map[note] = nil
     end
   elseif n == 1 and z == 1 then
     message = UI.Message.new({"Remove all circles?.", "", "KEY2 to cancel", "KEY3 to confirm"})

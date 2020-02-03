@@ -29,7 +29,8 @@ local libc = include("lib/libCircles")
 local mode = math.random(#music.SCALES)
 local scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
 local clk = beatclock.new()
-local midi_out = midi.connect()
+local midi_out_device = midi.connect()
+local midi_out_channel
 local message = nil
 local active_note_age_map = {}
 
@@ -81,6 +82,16 @@ function setupParams()
   
   -- clock_sources: midi
   clk:add_clock_params()
+  params:add({type = "number", id = "midi_out_device", name = "midi out device",
+    min = 1, max = 4, default = 1,
+    action = function(value) midi_out_device = midi.connect(value) end})
+  
+  params:add{type = "number", id = "midi_out_channel", name = "midi out channel",
+    min = 1, max = 16, default = 1,
+    action = function(value)
+      -- TODO: Turn all notes off
+      midi_out_channel = value
+    end}
   params:add_separator()
   
   -- libCircles
@@ -108,7 +119,7 @@ function init()
   screen.aa(1)
   
   libc.handleCircleBurst = handleCircleBurst
-  midi_out.event = clk.process_midi
+  midi_out_device.event = clk.process_midi
   
   setupParams()
 end
@@ -117,7 +128,7 @@ function step()
   -- kill old notes
   for active_note, active_note_age in pairs(active_note_age_map) do
     if active_note_age >= 1 then
-      midi_out:send({type='note_off', note=active_note})
+      midi_out_device:send({type='note_off', note=active_note, ch=midi_out_channel})
       active_note_age_map[active_note] = nil
     else
       active_note_age_map[active_note] = active_note_age + 1
@@ -161,8 +172,8 @@ function handleCircleBurst(circle)
 end
 
 function play_note(note)
-  midi_out:send({type='note_off', note=note})
-  midi_out:send({type='note_on', note=note})
+  midi_out_device:send({type='note_off', note=note, ch=midi_out_channel})
+  midi_out_device:send({type='note_on', note=note, ch=midi_out_channel})
   
   active_note_age_map[note] = 1
 end
@@ -195,7 +206,7 @@ function key(n,z)
       message = nil
       libc.forEachCircle(function(c)
         local note = noteForCircle(c)
-        midi_out:send({type="note_off", note=note})
+        midi_out_device:send({type="note_off", note=note, ch=midi_out_channel})
         active_note_age_map[note] = nil
       end)
       libc.removeAllCircles()
@@ -208,7 +219,7 @@ function key(n,z)
     else
       local removedCircle = libc.removeCircleAt()
       local note = noteForCircle(removedCircle)
-      midi_out:send({type="note_off", note=note})
+      midi_out_device:send({type="note_off", note=note, ch=midi_out_channel})
       active_note_age_map[note] = nil
     end
   elseif n == 1 and z == 1 then

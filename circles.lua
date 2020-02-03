@@ -19,20 +19,20 @@
 engine.name = 'PolyPerc'
 
 -- inclues
-local music = require("musicutil")
+local music_util = require("musicutil")
 local beatclock = require("beatclock")
 local UI = require("ui")
 local math_helpers = include("lib/math_helpers")
 local libc = include("lib/libCircles")
 
 -- state
-local mode = math.random(#music.SCALES)
-local scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
+local scale_notes
 local clk = beatclock.new()
 local midi_out_device = midi.connect()
 local midi_out_channel
 local message = nil
 local active_note_age_map = {}
+local scale_names = {}
 
 -- enums
 local outputs = { audio = 1, crow = 2, crow_jf = 3, midi = 4 }
@@ -94,6 +94,17 @@ function setupParams()
     end}
   params:add_separator()
   
+  -- scale
+  -- scale: root note
+  params:add{type = "number", id = "root_note", name = "root note",
+    min = 0, max = 127, default = 60, formatter = function(param) return music_util.note_num_to_name(param:get(), true) end,
+    action = function() build_scale_notes() end}
+  -- scale: mode
+  params:add{type = "option", id = "scale_mode", name = "scale mode",
+    options = scale_names, default = 5,
+    action = function() build_scale_notes() end}
+params:add_separator()
+  
   -- libCircles
   params:add_option("keep_on_screen", "keep on screen", { "no", "yes" })
   params:set_action("keep_on_screen", function(value)
@@ -118,6 +129,11 @@ end
 function init()
   screen.aa(1)
   
+  for i = 1, #music_util.SCALES do
+    table.insert(scale_names, string.lower(music_util.SCALES[i].name))
+  end
+
+  
   libc.handleCircleBurst = handleCircleBurst
   midi_out_device.event = clk.process_midi
   
@@ -140,8 +156,8 @@ function step()
 end
 
 function noteForCircle(circle)
-  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale))
-  local note = scale[noteIndex]
+  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale_notes))
+  local note = scale_notes[noteIndex]
   return note
 end
 
@@ -176,6 +192,10 @@ function play_note(note)
   midi_out_device:send({type='note_on', note=note, ch=midi_out_channel})
   
   active_note_age_map[note] = 1
+end
+
+function build_scale_notes()
+  scale_notes = music_util.generate_scale(params:get("root_note") - 1, params:get("scale_mode"), 1)
 end
 
 function redraw()

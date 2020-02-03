@@ -54,26 +54,29 @@ function libCircles.addCircle(x, y)
   return #libCircles._circles
 end	
 
---- removes the circle at the given index
+--- removes the circle at the given index and returns the circle it removes
 -- @param index the index of the circle to remove. optional, defaults to the index of the last circle that was added
 function libCircles.removeCircle(index)
   index = index or #libCircles._circles
   
-  table.remove(libCircles._circles, index)
+  return table.remove(libCircles._circles, index)
 end
 
--- removes the first circle found that contains p
+-- removes the first circle found that contains p and returns the circle it removes
 -- @param p point contained within the circle to remove
 function libCircles.removeCircleAt(p)
   p = p or libCircles.p
+  local removedCircle = nil
   
   for i=1,#libCircles._circles do
     local c = libCircles._circles[i]
     if libCircles._isPointInCircle(p, c) then
-      libCircles.removeCircle(i)
+      removedCircle = libCircles.removeCircle(i)
       break
     end
   end
+  
+  return removedCircle
 end
 
 --- removes all circles

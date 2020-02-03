@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.3 @jakecarter
+-- v1.5 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor
@@ -15,48 +15,33 @@
 --
 -- Enjoy
 --
--- Release Notes
--- v1.3
--- System param saving/loading
--- now supported.
---
--- v1.2
--- Added param for determinsitc
--- burst type.
---
--- v1.1 - Crow
--- input 2 - Clock
--- output 1 - Trigger
--- output 2 - Pitch
--- output 3 - Y Pos  (0 - 10V)
--- output 4 - Radius (0 - 10V)
---
-
 
 engine.name = 'PolyPerc'
 
 -- inclues
-local music = require("musicutil")
+local music_util = require("musicutil")
 local beatclock = require("beatclock")
 local UI = require("ui")
 local math_helpers = include("lib/math_helpers")
 local libc = include("lib/libCircles")
 
 -- state
-local mode = math.random(#music.SCALES)
-local scale = music.generate_scale_of_length(60,music.SCALES[mode].name,16)
+local scale_notes
 local clk = beatclock.new()
-local clk_midi = midi.connect()
+local midi_out_device = midi.connect()
+local midi_out_channel
 local message = nil
+local active_note_age_map = {}
+local scale_names = {}
 
 -- enums
-local outputs = { audio = 1, crow = 2, crow_jf = 3 }
+local outputs = { audio = 1, crow = 2, crow_jf = 3, midi = 4 }
 local clock_sources = { midi = 1, crow = 2 }
 local radius_affects = { release = 1, amp = 2 }
 
 function setupParams()
   -- output
-  params:add_option("output", "output", { "audio", "crow", "crow + jf" }, outputs.audio)
+  params:add_option("output", "output", { "audio", "crow", "crow + jf", "midi" }, outputs.audio)
   params:set_action("output", function(value)
     if value == outputs.crow then
       crow.output[1].action = "pulse(0.1, 5, 1)"
@@ -97,7 +82,28 @@ function setupParams()
   
   -- clock_sources: midi
   clk:add_clock_params()
+  params:add({type = "number", id = "midi_out_device", name = "midi out device",
+    min = 1, max = 4, default = 1,
+    action = function(value) midi_out_device = midi.connect(value) end})
+  
+  params:add{type = "number", id = "midi_out_channel", name = "midi out channel",
+    min = 1, max = 16, default = 1,
+    action = function(value)
+      -- TODO: Turn all notes off
+      midi_out_channel = value
+    end}
   params:add_separator()
+  
+  -- scale
+  -- scale: root note
+  params:add{type = "number", id = "root_note", name = "root note",
+    min = 0, max = 127, default = 60, formatter = function(param) return music_util.note_num_to_name(param:get(), true) end,
+    action = function() build_scale_notes() end}
+  -- scale: mode
+  params:add{type = "option", id = "scale_mode", name = "scale mode",
+    options = scale_names, default = 5,
+    action = function() build_scale_notes() end}
+params:add_separator()
   
   -- libCircles
   params:add_option("keep_on_screen", "keep on screen", { "no", "yes" })
@@ -123,20 +129,40 @@ end
 function init()
   screen.aa(1)
   
+  for i = 1, #music_util.SCALES do
+    table.insert(scale_names, string.lower(music_util.SCALES[i].name))
+  end
+
+  
   libc.handleCircleBurst = handleCircleBurst
-  clk_midi.event = clk.process_midi
+  midi_out_device.event = clk.process_midi
   
   setupParams()
 end
 
 function step()
+  -- kill old notes
+  for active_note, active_note_age in pairs(active_note_age_map) do
+    if active_note_age >= 1 then
+      midi_out_device:send({type='note_off', note=active_note, ch=midi_out_channel})
+      active_note_age_map[active_note] = nil
+    else
+      active_note_age_map[active_note] = active_note_age + 1
+    end
+  end
+
   libc.updateCircles()
   redraw()
 end
 
+function noteForCircle(circle)
+  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale_notes))
+  local note = scale_notes[noteIndex]
+  return note
+end
+
 function handleCircleBurst(circle)
-  local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale))
-  local note = scale[noteIndex]
+  local note = noteForCircle(circle)
 
   if params:get("output") == outputs.audio then
     if params:get("radius_affects") == radius_affects.release then
@@ -156,7 +182,20 @@ function handleCircleBurst(circle)
     crow.output[1].execute()
   elseif params:get("output") == outputs.crow_jf then
     crow.ii.jf.play_note((note - 60) / 12, math_helpers.scale(circle.r, 1, 64, 1, 10))
+  elseif params:get("output") == outputs.midi then
+    play_note(note)
   end
+end
+
+function play_note(note)
+  midi_out_device:send({type='note_off', note=note, ch=midi_out_channel})
+  midi_out_device:send({type='note_on', note=note, ch=midi_out_channel})
+  
+  active_note_age_map[note] = 1
+end
+
+function build_scale_notes()
+  scale_notes = music_util.generate_scale(params:get("root_note") - 1, params:get("scale_mode"), 1)
 end
 
 function redraw()
@@ -185,6 +224,11 @@ function key(n,z)
   if n == 3 and z == 1 then
     if message then
       message = nil
+      libc.forEachCircle(function(c)
+        local note = noteForCircle(c)
+        midi_out_device:send({type="note_off", note=note, ch=midi_out_channel})
+        active_note_age_map[note] = nil
+      end)
       libc.removeAllCircles()
     else
       libc.addCircle()
@@ -193,7 +237,10 @@ function key(n,z)
     if message then
       message = nil
     else
-      libc.removeCircleAt()
+      local removedCircle = libc.removeCircleAt()
+      local note = noteForCircle(removedCircle)
+      midi_out_device:send({type="note_off", note=note, ch=midi_out_channel})
+      active_note_age_map[note] = nil
     end
   elseif n == 1 and z == 1 then
     message = UI.Message.new({"Remove all circles?.", "", "KEY2 to cancel", "KEY3 to confirm"})

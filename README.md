@@ -17,6 +17,10 @@ The size determins how long the sound will last. Larger circles will sound out f
 
 There are also a few parameters to adjust under the _KEY 1_ parameters page. Play around with those.
 
+### v1.5
+Added MIDI support. Choose midi device (1 - 4) and channel (1 - 16) in params.
+Added scale selection. Choose root note and mode in params.
+
 ### v1.4
 Added Crow + Just Friends support. Please make sure to update your crow and Norns to the latest firmware.
 

@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.5 @jakecarter
+-- v1.5.1 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor
@@ -63,7 +63,7 @@ function setupParams()
   params:add_separator()
   
   -- clock_sources
-  params:add({type = "option", id = "clock_source", name = "clock source", default = clock_sources.midi,
+  params:add({type = "option", id = "circles_clock_source", name = "clock source", default = clock_sources.midi,
     options = { "midi", "crow" },
     action = function(value)
       if value == clock_sources.midi then

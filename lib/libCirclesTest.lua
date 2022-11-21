@@ -1,3 +1,10 @@
+-- `include` is not a standard part of Lua. It is provided by the norns runtime, so I can't run it on my computer. This will check to see if the function exists and define something that works for me if it doesn't.
+if (_G["include"] == nil) then
+  include = function(path)
+    return dofile("/Users/jake/Code/norns/circles/" .. path .. ".lua")
+  end
+end
+
 local libc = dofile('/Users/jake/Code/norns/circles/lib/libCircles.lua')
 --local libc = dofile('/home/we/dust/code/carter/circles/lib/libCircles.lua')
 

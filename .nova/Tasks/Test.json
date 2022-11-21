@@ -1,0 +1,9 @@
+{
+  "actions" : {
+    "run" : {
+      "enabled" : true,
+      "script" : "#!\/bin\/sh\nlua lib\/libCirclesTest.lua"
+    }
+  },
+  "openLogOnRun" : "start"
+}

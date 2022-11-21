@@ -170,6 +170,14 @@ function step()
   end
 end
 
+function clock.transport.start()
+  running = true
+end
+
+function clock.transport.stop()
+  running = false
+end
+
 function noteForCircle(circle)
   local noteIndex = math.floor(math_helpers.scale(circle.x, 0, 128, 1, #scale_notes))
   local note = scale_notes[noteIndex]

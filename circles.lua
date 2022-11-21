@@ -20,19 +20,19 @@ engine.name = 'PolyPerc'
 
 -- inclues
 local music_util = require("musicutil")
-local beatclock = require("beatclock")
 local UI = require("ui")
 local math_helpers = include("lib/math_helpers")
 local libc = include("lib/libCircles")
 
 -- state
 local scale_notes
-local clk = beatclock.new()
 local midi_out_device = midi.connect()
 local midi_out_channel
 local message = nil
 local active_note_age_map = {}
 local scale_names = {}
+
+local running = true
 
 -- enums
 local outputs = { audio = 1, crow = 2, crow_jf = 3, midi = 4 }
@@ -62,26 +62,34 @@ function setupParams()
   end)
   params:add_separator()
   
-  -- clock_sources
-  params:add({type = "option", id = "circles_clock_source", name = "clock source", default = clock_sources.midi,
-    options = { "midi", "crow" },
-    action = function(value)
-      if value == clock_sources.midi then
-        clk.on_step = step
-        clk:start()
-      elseif value == clock_sources.crow then
-        clk:stop()
-        
-        crow.input[2].mode("change",1,0.1,"rising")
-        crow.input[2].change = function(s)
-          step()
-        end
-      end
-    end
-  })
+  -- JCTODO: Get this working again; I don't think I'm going to need this with the new `clock` api, but I guess we'll see.
+  -- clock_sources 
+  -- params:add({type = "option", id = "clock_source", name = "clock source", default = clock_sources.midi,
+  --   options = { "midi", "crow" },
+  --   action = function(value)
+  --     if value == clock_sources.midi then
+  --       
+  --       -- JCTODO: Switch to `clock`
+  --       clk.on_step = step
+  --       clk:start()
+  --       
+  --       
+  --     elseif value == clock_sources.crow then
+  --       
+  --       -- JCTODO: Switch to `clock`
+  --       clk:stop()
+  --       
+  --       crow.input[2].mode("change",1,0.1,"rising")
+  --       crow.input[2].change = function(s)
+  --         step()
+  --       end
+  --     end
+  --   end
+  -- })
   
   -- clock_sources: midi
-  clk:add_clock_params()
+  -- clk:add_clock_params() -- JCTODO: Switch to `clock`
+  
   params:add({type = "number", id = "midi_out_device", name = "midi out device",
     min = 1, max = 4, default = 1,
     action = function(value) midi_out_device = midi.connect(value) end})
@@ -135,24 +143,31 @@ function init()
 
   
   libc.handleCircleBurst = handleCircleBurst
-  midi_out_device.event = clk.process_midi
+  -- midi_out_device.event = clk.process_midi -- JCTODO: Switch to `clock`
   
   setupParams()
+  
+  clock.run(step)
 end
 
 function step()
-  -- kill old notes
-  for active_note, active_note_age in pairs(active_note_age_map) do
-    if active_note_age >= 1 then
-      midi_out_device:send({type='note_off', note=active_note, ch=midi_out_channel})
-      active_note_age_map[active_note] = nil
-    else
-      active_note_age_map[active_note] = active_note_age + 1
+  while true do
+    clock.sync(1/4) -- JCTODO: Provide step divider param? `clock.sync(1/params:get("step_div"))`
+    if running then
+      -- kill old notes
+      for active_note, active_note_age in pairs(active_note_age_map) do
+        if active_note_age >= 1 then
+          midi_out_device:send({type='note_off', note=active_note, ch=midi_out_channel})
+          active_note_age_map[active_note] = nil
+        else
+          active_note_age_map[active_note] = active_note_age + 1
+        end
+      end
+      
+      libc.updateCircles()
+      redraw()
     end
   end
-
-  libc.updateCircles()
-  redraw()
 end
 
 function noteForCircle(circle)

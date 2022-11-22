@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.5.1 @jakecarter
+-- v1.6 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor

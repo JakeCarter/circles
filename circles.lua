@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.6 @jakecarter
+-- v1.6.1 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor
@@ -34,10 +34,13 @@ local isRunning = true
 -- enums
 local outputs = { audio = 1, midi = 2, crow = 3, crow_jf = 4 }
 local radius_affects = { release = 1, amp = 2 }
+local midi_continue_modes = { always_play = 1, toggle= 2 }
 
 local midi_devices
 local midi_out_device
 local midi_out_channel
+local midi_continue_device
+local midi_continue_mode
 function build_midi_device_list()
   midi_devices = {}
   for i = 1,#midi.vports do
@@ -100,6 +103,19 @@ function setupParams()
     action = function() build_scale_notes() end
   })
   
+  -- midi continue
+  params:add_group("midi continue", 2)
+  params:add({type = "option", id = "midi_continue_device", name = "device",
+    options = midi_devices, default = 1,
+    action = function(value)
+      midi_continue_device = midi.connect(value)
+    end
+  })
+  params:add_option("midi_continue_mode", "mode", { "always play", "toggle" })
+  params:set_action("midi_continue_mode", function(value)
+    midi_continue_mode = value
+  end)
+  
   -- libCircles
   params:add_option("keep_on_screen", "keep on screen", { "no", "yes" })
   params:set_action("keep_on_screen", function(value)
@@ -134,6 +150,7 @@ function init()
   build_midi_device_list()
   
   setupParams()
+  midi_continue_device.event = midi_continue_device_event
   
   clock.run(step)
 end
@@ -167,6 +184,18 @@ end
 
 function clock.transport.stop()
   isRunning = false
+end
+
+function midi_continue_device_event(data)
+  msg = midi.to_msg(data)
+    
+  if msg.type == "continue" then
+    if midi_continue_mode == midi_continue_modes.always_play then
+      isRunning = true
+    elseif midi_continue_mode == midi_continue_modes.toggle then
+      isRunning = not isRunning
+    end
+  end 
 end
 
 function noteForCircle(circle)

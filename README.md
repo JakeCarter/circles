@@ -21,6 +21,15 @@ The size determines how long the sound will last. Larger circles will sound out 
 
 There are also a few parameters to adjust under the _KEY 1_ parameters page. Play around with those.
 
+### v1.6.1
+
+Minor update to add midi continue support.
+
+- Added two new params; midi continue device and midi continue mode
+     - Midi continue device lets you choose which device to listen for "continue" messages from; This allows you to choose a different midi device for "continue" messages than the device you're sending midi out messages to
+     - Midi continue mode lets you choose if new "continue" messages always start playback or toggle so you can use it as a play/pause button
+- Grouped new params in "midi continue" group
+
 ### v1.6
 
 This is a pretty major update under the hood. Because of that I took this as an opportunity to update some of the param IDs. This means that existing PSETs will probably result in unexpected behavior.

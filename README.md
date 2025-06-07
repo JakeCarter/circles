@@ -21,6 +21,10 @@ The size determines how long the sound will last. Larger circles will sound out 
 
 There are also a few parameters to adjust under the _KEY 1_ parameters page. Play around with those.
 
+### v1.6.2
+
+- Fixed midi channel out setting (Thank you [@xbow](https://github.com/xbow)!)
+
 ### v1.6.1
 
 Minor update to add midi continue support.

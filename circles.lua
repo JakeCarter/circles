@@ -77,7 +77,7 @@ function setupParams()
     min = 1, max = 16, default = 1,
     action = function(value)
       -- JCTODO: Turn all notes off
-      midi_channel = value
+      midi_out_channel = value
     end
   })
   

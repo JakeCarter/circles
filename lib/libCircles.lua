@@ -13,6 +13,8 @@
 --   forEachCirlce(handler) - iterates through each circle calling the handler passing in the current circle
 --   updateCircles() - increments each circle's size and runs collision detection
 --   updateCursor(dx, dy) - updates p with the given x, y deltas
+--   getState() - serializable snapshot of circles + cursor (for PSET save)
+--   setState(state) - restore from getState() snapshot (for PSET load)
 
 local math_helpers = include("lib/math_helpers")
 math.randomseed(os.time())
@@ -111,6 +113,42 @@ end
 function libCircles.updateCursor(dx, dy)
   libCircles.p.x = math_helpers.clamp(libCircles.p.x + dx, 0, libCircles.screen_width-1)
   libCircles.p.y = math_helpers.clamp(libCircles.p.y + dy, 0, libCircles.screen_height-1)
+end
+
+--- returns a serializable snapshot of circles + cursor (for PSET save)
+function libCircles.getState()
+  local circles = {}
+  for i = 1, #libCircles._circles do
+    local c = libCircles._circles[i]
+    circles[i] = { x = c.x, y = c.y, r = c.r }
+  end
+  return {
+    circles = circles,
+    cursor = { x = libCircles.p.x, y = libCircles.p.y }
+  }
+end
+
+--- restores circles + cursor from a getState() snapshot (for PSET load)
+-- @param state table from getState(), or nil to no-op
+function libCircles.setState(state)
+  if state == nil then return end
+
+  libCircles._circles = {}
+  if state.circles then
+    for i = 1, #state.circles do
+      local c = state.circles[i]
+      table.insert(libCircles._circles, {
+        x = c.x,
+        y = c.y,
+        r = c.r or 1
+      })
+    end
+  end
+
+  if state.cursor then
+    libCircles.p.x = state.cursor.x or libCircles.p.x
+    libCircles.p.y = state.cursor.y or libCircles.p.y
+  end
 end
 
 --[[ 

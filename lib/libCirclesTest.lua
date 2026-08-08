@@ -1,12 +1,13 @@
--- `include` is not a standard part of Lua. It is provided by the norns runtime, so I can't run it on my computer. This will check to see if the function exists and define something that works for me if it doesn't.
+-- `include` is not a standard part of Lua. It is provided by the norns runtime.
+-- Resolve paths relative to this test file so it runs off-device.
+local test_dir = (debug.getinfo(1, "S").source:match("^@(.*/)") or "./")
 if (_G["include"] == nil) then
   include = function(path)
-    return dofile("/Users/jake/Code/norns/circles/" .. path .. ".lua")
+    return dofile(test_dir .. "../" .. path .. ".lua")
   end
 end
 
-local libc = dofile('/Users/jake/Code/norns/circles/lib/libCircles.lua')
---local libc = dofile('/home/we/dust/code/carter/circles/lib/libCircles.lua')
+local libc = dofile(test_dir .. "libCircles.lua")
 
 -- test default values
 assert(libc ~= nil)
@@ -164,5 +165,30 @@ assert(libc._isPointInCircle(p, libc._circles[1]))
 p.x = -1
 p.y = 10
 assert(not libc._isPointInCircle(p, libc._circles[1]))
+
+-- test getState / setState (PSET persistence)
+libc.reset()
+libc.p.x = 12
+libc.p.y = 34
+libc.addCircle(10, 20)
+libc.addCircle(50, 40)
+libc._circles[1].r = 7
+libc._circles[2].r = 3
+local state = libc.getState()
+assert(#state.circles == 2)
+assert(state.circles[1].x == 10 and state.circles[1].y == 20 and state.circles[1].r == 7)
+assert(state.circles[2].x == 50 and state.circles[2].y == 40 and state.circles[2].r == 3)
+assert(state.cursor.x == 12 and state.cursor.y == 34)
+
+libc.reset()
+assert(#libc._circles == 0)
+libc.setState(state)
+assert(#libc._circles == 2)
+assert(libc._circles[1].x == 10 and libc._circles[1].y == 20 and libc._circles[1].r == 7)
+assert(libc._circles[2].x == 50 and libc._circles[2].y == 40 and libc._circles[2].r == 3)
+assert(libc.p.x == 12 and libc.p.y == 34)
+
+libc.setState(nil) -- no-op
+assert(#libc._circles == 2)
 
 print("all tests passed!")

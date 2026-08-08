@@ -21,6 +21,11 @@ The size determines how long the sound will last. Larger circles will sound out 
 
 There are also a few parameters to adjust under the _KEY 1_ parameters page. Play around with those.
 
+### v1.6.3
+
+- Fixed PSET save/load: circle layout (positions, radii) and cursor are now saved alongside each PSET. Previously only menu params were persisted, so loading a PSET appeared to do nothing to the composition.
+- Updated param group/separator IDs to current norns API.
+
 ### v1.6.2
 
 - Fixed midi channel out setting (Thank you [@xbow](https://github.com/xbow)!)

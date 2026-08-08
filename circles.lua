@@ -1,5 +1,5 @@
 -- oO ( circles ) Oo
--- v1.6.1 @jakecarter
+-- v1.6.3 @jakecarter
 -- llllllll.co/t/22951
 -- 
 -- ENC 2 & 3 move cursor
@@ -41,6 +41,12 @@ local midi_out_device
 local midi_out_channel
 local midi_continue_device
 local midi_continue_mode
+
+-- companion file path for circle state saved alongside a .pset
+local function circles_data_path(pset_filename)
+  return pset_filename:gsub("%.pset$", "") .. "-circles.data"
+end
+
 function build_midi_device_list()
   midi_devices = {}
   for i = 1,#midi.vports do
@@ -51,10 +57,10 @@ function build_midi_device_list()
 end
 
 function setupParams()  
-  params:add_separator("CIRCLES")
+  params:add_separator("circles_header", "CIRCLES")
   
   -- output
-  params:add_group("outs", 3)
+  params:add_group("outs", "outs", 3)
   params:add_option("circles_output", "out", { "audio", "midi", "crow", "crow + jf" }, outputs.audio)
   params:set_action("circles_output", function(value)
     if value == outputs.crow then
@@ -82,7 +88,7 @@ function setupParams()
   })
   
   -- circles_output: audio
-  params:add_group("audio", 2)
+  params:add_group("audio", "audio", 2)
   params:add_option("radius_affects", "radius affects", { "release", "amp" })
   params:add_control("cutoff", "cutoff", controlspec.new(50,20000,'exp',0,1000,'hz'))
   params:set_action("cutoff", function(x)
@@ -90,7 +96,7 @@ function setupParams()
   end)
     
   -- scale
-  params:add_group("scale", 2)
+  params:add_group("scale", "scale", 2)
   -- scale: root note
   params:add({type = "number", id = "root_note", name = "root note",
     min = 0, max = 127, default = 60,
@@ -104,7 +110,7 @@ function setupParams()
   })
   
   -- midi continue
-  params:add_group("midi continue", 2)
+  params:add_group("midi_continue", "midi continue", 2)
   params:add({type = "option", id = "midi_continue_device", name = "device",
     options = midi_devices, default = 1,
     action = function(value)
@@ -132,9 +138,41 @@ function setupParams()
     libc.burst_type = value
   end)
   params:add({type = "number", id = "step_div", name = "step division", min = 1, max = 16, default = 4})
+
+  -- PSET callbacks: params are saved by the system; circle layout is not.
+  -- Persist circles + cursor alongside each .pset (see monome params docs).
+  params.action_write = function(filename, name, number)
+    local path = circles_data_path(filename)
+    tab.save(libc.getState(), path)
+    print("circles >> wrote state: " .. path)
+  end
+
+  params.action_read = function(filename, silent, number)
+    local path = circles_data_path(filename)
+    local state = tab.load(path)
+    if state then
+      -- silence any notes tied to the previous layout before replacing it
+      for active_note, _ in pairs(active_note_age_map) do
+        if midi_out_device then
+          midi_out_device:send({type = 'note_off', note = active_note, ch = midi_out_channel})
+        end
+        active_note_age_map[active_note] = nil
+      end
+      libc.setState(state)
+      print("circles >> read state: " .. path)
+      redraw()
+    else
+      print("circles >> no state file: " .. path)
+    end
+  end
+
+  params.action_delete = function(filename, name, number)
+    local path = circles_data_path(filename)
+    os.remove(path)
+    print("circles >> deleted state: " .. path)
+  end
   
   params:default()
-  params:bang()
 end
 
 function init()

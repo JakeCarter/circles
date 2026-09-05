@@ -154,7 +154,7 @@ function setupParams()
       -- silence any notes tied to the previous layout before replacing it
       for active_note, _ in pairs(active_note_age_map) do
         if midi_out_device then
-          midi_out_device:send({type = 'note_off', note = active_note, ch = midi_out_channel})
+          midi_out_device:note_off(active_note, 0, midi_out_channel)
         end
         active_note_age_map[active_note] = nil
       end
@@ -196,7 +196,7 @@ end
 function kill_old_notes()
   for active_note, active_note_age in pairs(active_note_age_map) do
     if active_note_age >= 1 then
-      midi_out_device:send({type='note_off', note=active_note, ch=midi_out_channel})
+      midi_out_device:note_off(active_note, 0, midi_out_channel)
       active_note_age_map[active_note] = nil
     else
       active_note_age_map[active_note] = active_note_age + 1
@@ -269,8 +269,8 @@ function handleCircleBurst(circle)
 end
 
 function play_note(note)
-  midi_out_device:send({type='note_off', note=note, ch=midi_out_channel})
-  midi_out_device:send({type='note_on', note=note, ch=midi_out_channel})
+  midi_out_device:note_off(note, 0, midi_out_channel)
+  midi_out_device:note_on(note, 100, midi_out_channel)
   
   active_note_age_map[note] = 1
 end
@@ -307,7 +307,7 @@ function key(n,z)
       message = nil
       libc.forEachCircle(function(c)
         local note = noteForCircle(c)
-        midi_out_device:send({type="note_off", note=note, ch=midi_out_channel})
+        midi_out_device:note_off(note, 0, midi_out_channel)
         active_note_age_map[note] = nil
       end)
       libc.removeAllCircles()
@@ -320,7 +320,7 @@ function key(n,z)
     else
       local removedCircle = libc.removeCircleAt()
       local note = noteForCircle(removedCircle)
-      midi_out_device:send({type="note_off", note=note, ch=midi_out_channel})
+      midi_out_device:note_off(note, 0, midi_out_channel)
       active_note_age_map[note] = nil
     end
   elseif n == 1 and z == 1 then
